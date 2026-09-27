@@ -117,6 +117,7 @@ These are load-bearing. They are implemented in types, not just in prose:
 | [`docs/REQUIREMENTS_CHECKLIST.md`](docs/REQUIREMENTS_CHECKLIST.md) | Requirement-by-requirement status |
 | [`docs/DESIGN_SYSTEM_GUIDE.md`](docs/DESIGN_SYSTEM_GUIDE.md) | **Portable design system** — tokens, components, rules and the full stylesheet. Self-contained; reusable in other projects. |
 | [`docs/DESIGN_FIDELITY.md`](docs/DESIGN_FIDELITY.md) | Design verification and every divergence, with arithmetic |
+| [`docs/TESTER_GUIDE.md`](docs/TESTER_GUIDE.md) | **Tester's guide** — plain-language explanation of every screen and term with sample-data examples, the seeded dataset, expected figures, rules to verify, and known gaps |
 | [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md) | Decisions, assumptions, open questions, next steps |
 | `src/modules/*/README.md` | Per-module responsibility and rules |
 
