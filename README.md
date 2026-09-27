@@ -30,7 +30,9 @@ npm run build
 ```
 
 No environment variables are required to run. Copy `.env.example` to `.env.local`
-to change the reporting locale or the as-of date.
+to change the reporting locale or the as-of date. Values are trimmed and surrounding
+quotes are stripped, and an unrecognised `NEXT_PUBLIC_LOCALE` falls back to `en-AU`,
+so a value pasted into a hosting dashboard (Vercel, Netlify) cannot fail the build.
 
 ## What it does
 
