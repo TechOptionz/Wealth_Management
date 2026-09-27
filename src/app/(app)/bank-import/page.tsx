@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { reconciliationService } from '@/modules/reconciliation/service';
 import { INTERNAL_TRANSFER_ALLOCATION } from '@/modules/reconciliation/model';
 import { propertiesService } from '@/modules/properties/service';
@@ -13,7 +14,8 @@ import { Stack } from '@/shared/components/Layout';
 export const metadata: Metadata = { title: 'Bank import & matching · Holdfast' };
 
 /** FR-06 — the import currently in progress. */
-export default function BankImportPage() {
+export default async function BankImportPage() {
+  await loadUnitOfWork();
   const bankImport = reconciliationService.currentImport();
 
   if (!bankImport) {

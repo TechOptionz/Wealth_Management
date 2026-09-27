@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { sumMoney } from '@/shared/lib/money';
 import { sharedBillsService, type SharedBillFilter } from '@/modules/shared-bills/service';
 import { propertiesService } from '@/modules/properties/service';
@@ -11,7 +12,8 @@ export const metadata: Metadata = { title: 'Shared bills & recoveries · Holdfas
 const FILTERS: readonly SharedBillFilter[] = ['all', 'recoverable', 'owner-cost', 'needs-review', 'blocked'];
 
 /** FR-07 — shared bills, their approved splits, and what is recoverable. */
-export default function SharedBillsPage() {
+export default async function SharedBillsPage() {
+  await loadUnitOfWork();
   const all = sharedBillsService.listAllocations();
 
   const allocationsByFilter = FILTERS.reduce(

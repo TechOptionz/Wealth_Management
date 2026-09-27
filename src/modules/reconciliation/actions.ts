@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { asId } from '@/shared/types/common';
-import { runAction, type ActionResult } from '@/shared/lib/action-result';
+import type { ActionResult } from '@/shared/lib/action-result';
+import { runAction } from '@/server/actions/run-action';
 import { readString, requireString } from '@/shared/lib/form-data';
 import { ConflictError, NotFoundError, ValidationError } from '@/shared/lib/errors';
 import { resolveAsOfDate } from '@/shared/config/app-config';

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { propertiesService, type PropertyFilter } from '@/modules/properties/service';
 import { loansService } from '@/modules/loans/service';
@@ -60,7 +61,8 @@ function toCard(property: Property, asOf: IsoDate): PropertyCardProps {
 }
 
 /** FR-02 — properties, valuations and occupancy. */
-export default function PropertiesPage() {
+export default async function PropertiesPage() {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
   const all = propertiesService.list();
 

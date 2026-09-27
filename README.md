@@ -23,7 +23,7 @@ npm run dev          # http://localhost:3000
 ```
 
 ```bash
-npm test             # 137 tests, incl. the document's UAT-01…07 scenarios
+npm test             # 318 tests, incl. the document's UAT-01…07 scenarios (5 need TEST_DATABASE_URL)
 npm run typecheck    # tsc --noEmit
 npm run lint
 npm run build
@@ -33,6 +33,17 @@ No environment variables are required to run. Copy `.env.example` to `.env.local
 to change the reporting locale or the as-of date. Values are trimmed and surrounding
 quotes are stripped, and an unrecognised `NEXT_PUBLIC_LOCALE` falls back to `en-AU`,
 so a value pasted into a hosting dashboard (Vercel, Netlify) cannot fail the build.
+
+### Database
+
+Without a database the app runs on a seeded in-memory store that resets when the
+server restarts. Set `DATABASE_URL` to a Postgres connection string (Supabase,
+Neon, Vercel Postgres or a local instance) and every record is stored there
+instead: the app creates its two tables and seeds the same sample data on first
+use. `npm run db:reset` empties them so the next request seeds afresh. On Vercel,
+add `DATABASE_URL` under Settings → Environment Variables. `.env.example`
+explains the Supabase specifics.
+
 
 ## What it does
 
@@ -112,5 +123,6 @@ These are load-bearing. They are implemented in types, not just in prose:
 ## Tech
 
 Next.js 15 (App Router) · React 19 · TypeScript 5.8 (strict, with
-`noUncheckedIndexedAccess`) · Zod 3 for boundary validation · Vitest · no UI
+`noUncheckedIndexedAccess`) · Zod 3 for boundary validation · Postgres through `pg` when `DATABASE_URL` is set ·
+Vitest · no UI
 framework — the design prototype's CSS is ported verbatim.

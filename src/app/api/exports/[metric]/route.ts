@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { jsonError } from '@/server/http/respond';
 import type { RouteContext } from '@/server/http/route';
+import { withUnitOfWork } from '@/server/db/unit-of-work';
 import { exportsService } from '@/modules/dashboard/exports';
 import { METRIC_LABELS, type ExplainableMetric } from '@/modules/dashboard/explain';
 import { resolveAsOfDate } from '@/shared/config/app-config';
@@ -23,7 +24,9 @@ export async function GET(request: NextRequest, context: RouteContext<{ metric: 
     }
 
     const asOf = request.nextUrl.searchParams.get('asOf') ?? resolveAsOfDate();
-    const result = exportsService.exportExplanation(metric as ExplainableMetric, asOf);
+    const result = await withUnitOfWork(() =>
+      exportsService.exportExplanation(metric as ExplainableMetric, asOf),
+    );
 
     return new Response(result.body, {
       status: 200,

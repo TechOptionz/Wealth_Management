@@ -11,19 +11,25 @@ const grants = createCollection<AccessGrant>('access.grants', seedAccessGrants);
 const auditEvents = createCollection<AuditEvent>('access.audit', seedAuditEvents);
 
 /**
- * The active test persona. Cached on globalThis for the same reason collections
- * are: a dev-mode hot reload must not silently sign the tester back in as the
- * owner. Process-wide, not per-browser — a real session replaces this.
+ * The active test persona, stored as a single record so it survives restarts
+ * and is shared by every server instance, the same as any other data.
+ * Deployment-wide, not per-browser: a real session replaces this.
  */
-interface GlobalWithActiveUser {
-  __holdfastActiveUserId__?: UserId;
+interface ActiveSession {
+  readonly id: 'active';
+  readonly userId: UserId;
 }
-const globalRef = globalThis as unknown as GlobalWithActiveUser;
+const ACTIVE_SESSION_ID = 'active';
+const session = createCollection<ActiveSession>('access.session', () => []);
 
 export const accessRepository = {
-  getActiveUserId: (): UserId | undefined => globalRef.__holdfastActiveUserId__,
+  getActiveUserId: (): UserId | undefined => session.find(ACTIVE_SESSION_ID)?.userId,
   setActiveUserId: (id: UserId): void => {
-    globalRef.__holdfastActiveUserId__ = id;
+    if (session.find(ACTIVE_SESSION_ID)) {
+      session.update(ACTIVE_SESSION_ID, { userId: id });
+    } else {
+      session.insert({ id: ACTIVE_SESSION_ID, userId: id });
+    }
   },
   listUsers: (): readonly User[] => users.list(),
   findUser: (id: UserId): User | undefined => users.find(id),

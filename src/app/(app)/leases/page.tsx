@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { leasesService, type LeaseFilter, type LeaseView } from '@/modules/leases/service';
 import { LeasesScreen } from '@/modules/leases/components/LeasesScreen';
@@ -11,7 +12,8 @@ export const metadata: Metadata = { title: 'Leases & tenants · Holdfast' };
 const FILTERS: readonly LeaseFilter[] = ['active', 'ending-soon', 'ended'];
 
 /** FR-05 — leases and tenants. */
-export default function LeasesPage() {
+export default async function LeasesPage() {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
 
   const viewsByFilter = FILTERS.reduce(

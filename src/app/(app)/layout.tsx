@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { AppShell } from '@/shared/shell/AppShell';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { accessService } from '@/modules/access/service';
@@ -20,12 +21,19 @@ const PERSONA_NOTES: Partial<Record<AccessRole, string>> = {
 };
 
 /**
+ * Every screen renders per request: the data behind it lives in a store that
+ * changes between requests, so nothing here may be prerendered at build time.
+ */
+export const dynamic = 'force-dynamic';
+
+/**
  * Chrome for every application screen.
  *
  * Runs on the server so the nav badges, scope and as-of date are resolved from
  * live data before the shell renders — no loading flash in the navigation.
  */
-export default function AppLayout({ children }: { readonly children: ReactNode }) {
+export default async function AppLayout({ children }: { readonly children: ReactNode }) {
+  await loadUnitOfWork();
   const asOfDate = resolveAsOfDate();
   const currentUser = accessService.getCurrentUser();
 

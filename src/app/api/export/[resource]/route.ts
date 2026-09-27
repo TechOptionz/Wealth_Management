@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { jsonError } from '@/server/http/respond';
 import type { RouteContext } from '@/server/http/route';
+import { withUnitOfWork } from '@/server/db/unit-of-work';
 import {
   TABLE_EXPORT_RESOURCES,
   isTableExportResource,
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, context: RouteContext<{ resource
     if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) {
       throw new ValidationError('asOf must be a date in YYYY-MM-DD form.');
     }
-    const result = tableExportsService.exportTable(resource, asOf);
+    const result = await withUnitOfWork(() => tableExportsService.exportTable(resource, asOf));
 
     return new Response(result.body, {
       status: 200,

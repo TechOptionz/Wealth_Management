@@ -93,7 +93,11 @@ code.
 
 | Path | Purpose |
 | --- | --- |
-| `server/db/collection.ts` | The single data-access seam. Swap this to change persistence. |
+| `server/db/collection.ts` | The single data-access seam: the synchronous handle every repository builds on |
+| `server/db/unit-of-work.ts` | Per-request snapshot and write journal for the Postgres adapter: `withUnitOfWork()` for route handlers and Server Actions, `loadUnitOfWork()` for pages and layouts |
+| `server/db/postgres-storage.ts` | The Postgres backend: one JSONB row per record, tables created and seeded on first use |
+| `server/db/memory-store.ts` | The seeded in-process store used when no `DATABASE_URL` is set |
+| `server/actions/run-action.ts` | `runAction()` for Server Actions: the shared helper, run inside a unit of work |
 | `server/http/respond.ts` | Response envelope; the only file mapping errors to status codes |
 | `server/http/route.ts` | `handle()`, `parseBody()`, `parseQuery()` |
 

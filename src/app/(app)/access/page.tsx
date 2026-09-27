@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { accessApi } from '@/modules/access/api';
 import { propertiesService } from '@/modules/properties/service';
 import { AccessScreen } from '@/modules/access/components/AccessScreen';
@@ -8,7 +9,8 @@ import type { TimelineEntry } from '@/shared/components/Timeline';
 export const metadata: Metadata = { title: 'Access & audit · Holdfast' };
 
 /** NFR-01, NFR-03 — who can see what, and what has happened. */
-export default function AccessPage() {
+export default async function AccessPage() {
+  await loadUnitOfWork();
   return renderGuarded(accessView);
 }
 

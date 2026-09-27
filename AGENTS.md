@@ -79,6 +79,10 @@ in the page that composes both modules.
   new negative allocations; documents are hidden, not deleted.
 - **Services throw `AppError` subclasses.** Only `src/server/http/respond.ts`
   knows about status codes.
+- **Data access is synchronous; saving is per request.** Repositories read and
+  write a snapshot that `withUnitOfWork` (route handlers, Server Actions) loads
+  and saves. A page or layout must `await loadUnitOfWork()` before its first
+  read, and must not write. See `src/server/db/unit-of-work.ts`.
 
 ## Design fidelity
 
@@ -106,10 +110,13 @@ in the page that composes both modules.
 
 1. `src/modules/<name>/` with `README.md`, `model.ts`, `data/seed.ts`,
    `repository.ts`, `service.ts`, `validation.ts`, `api.ts`, `components/`.
+   Import the repository in `src/modules/all-repositories.ts` so a fresh
+   database seeds it.
 2. Register the screen in `src/shared/config/navigation.ts` — it drives the
    sidebar, the mobile tab bar and page titles.
 3. Add the page under `src/app/(app)/<route>/page.tsx` (a Server Component that
-   calls the service directly).
+   first awaits `loadUnitOfWork()` from `@/server/db/unit-of-work`, then calls
+   the service directly).
 4. Add route handlers under `src/app/api/<route>/`.
 5. Update `docs/MODULE_MAP.md` and `PROJECT_MEMORY.md`.
 
@@ -133,7 +140,8 @@ still open. That file is what makes the next session cheap.
 
 ## What this build does not do
 
-Seeded in-memory data, no authentication or MFA, no file storage, no reminder
+Seeded sample data (in memory by default; Postgres when `DATABASE_URL` is set,
+see `src/server/db/`), no authentication or MFA, no file storage, no reminder
 *scheduler* (dispatch logic exists and is tested; nothing runs it), no matching
 engine, no CSV parsing, no backups. See `docs/REQUIREMENTS_CHECKLIST.md` for the
 complete requirement-by-requirement list — it is deliberately explicit so nobody

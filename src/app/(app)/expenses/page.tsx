@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { expensesService, type ExpenseFilter } from '@/modules/expenses/service';
 import { propertiesService } from '@/modules/properties/service';
 import { entitiesService } from '@/modules/entities/service';
@@ -13,7 +14,8 @@ export const metadata: Metadata = { title: 'Expenses · Holdfast' };
 const FILTERS: readonly ExpenseFilter[] = ['all', 'corrected', 'no-evidence', 'estimated', 'voided'];
 
 /** FR-04 — the expense register with versioned corrections. */
-export default function ExpensesPage() {
+export default async function ExpensesPage() {
+  await loadUnitOfWork();
   const all = expensesService.query({ includeVoided: true }).map((view) => view);
 
   const viewsByFilter = FILTERS.reduce(

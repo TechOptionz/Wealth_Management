@@ -3,9 +3,13 @@
  *
  * `handle` wraps a module API function so every route gets identical error
  * handling without repeating try/catch in each file.
+ *
+ * The work runs inside a unit of work, so its reads see one consistent snapshot
+ * and its writes are saved together when it succeeds.
  */
 import type { NextRequest, NextResponse } from 'next/server';
 import { jsonOk, jsonError, type ApiFailure, type ApiSuccess } from './respond';
+import { withUnitOfWork } from '@/server/db/unit-of-work';
 import { ValidationError } from '@/shared/lib/errors';
 import type { z, ZodTypeAny } from 'zod';
 
@@ -18,7 +22,7 @@ export function handle<T>(
   status = 200,
 ): Promise<NextResponse<ApiSuccess<T> | ApiFailure>> {
   return Promise.resolve()
-    .then(work)
+    .then(() => withUnitOfWork(work))
     .then((data) => jsonOk(data, status) as NextResponse<ApiSuccess<T> | ApiFailure>)
     .catch((error: unknown) => jsonError(error) as NextResponse<ApiSuccess<T> | ApiFailure>);
 }

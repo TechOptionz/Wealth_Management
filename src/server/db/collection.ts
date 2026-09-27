@@ -1,17 +1,28 @@
 /**
- * In-memory collection primitive — the single data-access seam.
+ * Collection: the single data-access seam.
  *
- * Every module repository is built on `createCollection`, so swapping the
- * persistence engine (Postgres, SQLite, an API) means reimplementing this one
- * file's `Collection` interface rather than touching any module.
+ * Every module repository is built on `createCollection`. A collection is a
+ * handle: each call resolves the store backing the current execution and
+ * delegates to it. Which store that is depends on the data adapter:
  *
- * Records are frozen on the way in and copied on the way out, so callers cannot
- * mutate stored state by accident — the same guarantee a real database gives.
+ *   memory   - one process-wide store, seeded on first use (dev, tests)
+ *   postgres - a per-request snapshot loaded from Postgres by `withUnitOfWork`
+ *              (route handlers, Server Actions) or `loadUnitOfWork` (pages);
+ *              writes are journalled and saved when the unit of work ends
+ *
+ * The interface is deliberately synchronous. Services compose reads freely
+ * inside `.map` and `.filter` chains and never await; the asynchronous part of
+ * persistence (loading the snapshot, saving the journal) happens once per
+ * request at the boundary, not on every read. See `unit-of-work.ts`.
+ *
+ * Records are frozen on the way in and never mutated in place, so callers
+ * cannot corrupt stored state by accident, the same guarantee a real database
+ * gives.
  */
+import { registerCollection, type HasId } from './registry';
+import { currentStore } from './unit-of-work';
 
-export interface HasId {
-  readonly id: string;
-}
+export type { HasId };
 
 export interface Collection<T extends HasId> {
   /** All records, in insertion order. */
@@ -26,66 +37,25 @@ export interface Collection<T extends HasId> {
   /** Shallow-merges `changes`; returns undefined when the id is unknown. */
   update(id: string, changes: Partial<Omit<T, 'id'>>): T | undefined;
   remove(id: string): boolean;
-  /** Restore the collection to its seeded state — used by tests. */
+  /** Restore the collection to its seeded state. Used by tests. */
   reset(): void;
   readonly size: number;
 }
 
-/**
- * Next.js dev-mode hot reloading re-evaluates modules, which would otherwise
- * reset every collection on each edit. Collections are cached on globalThis so
- * in-session writes survive a reload.
- */
-const registry = new Map<string, Collection<never>>();
-
-interface GlobalWithRegistry {
-  __holdfastCollections__?: Map<string, Collection<never>>;
-}
-
-function getRegistry(): Map<string, Collection<never>> {
-  const globalRef = globalThis as unknown as GlobalWithRegistry;
-  globalRef.__holdfastCollections__ ??= registry;
-  return globalRef.__holdfastCollections__;
-}
-
 export function createCollection<T extends HasId>(name: string, seed: () => readonly T[]): Collection<T> {
-  const cached = getRegistry().get(name) as Collection<T> | undefined;
-  if (cached) return cached;
+  registerCollection({ name, seed });
 
-  let records = new Map<string, T>();
-
-  const load = (): void => {
-    records = new Map(seed().map((record) => [record.id, Object.freeze({ ...record })]));
-  };
-  load();
-
-  const collection: Collection<T> = {
-    list: () => [...records.values()],
-    where: (predicate) => [...records.values()].filter(predicate),
-    find: (id) => records.get(id),
-    findBy: (predicate) => [...records.values()].find(predicate),
-    insert: (record) => {
-      if (records.has(record.id)) {
-        throw new Error(`${name}: a record with id "${record.id}" already exists.`);
-      }
-      const stored = Object.freeze({ ...record });
-      records.set(record.id, stored);
-      return stored;
-    },
-    update: (id, changes) => {
-      const existing = records.get(id);
-      if (!existing) return undefined;
-      const stored = Object.freeze({ ...existing, ...changes });
-      records.set(id, stored);
-      return stored;
-    },
-    remove: (id) => records.delete(id),
-    reset: load,
+  return {
+    list: () => currentStore().list<T>(name),
+    where: (predicate) => currentStore().list<T>(name).filter(predicate),
+    find: (id) => currentStore().find<T>(name, id),
+    findBy: (predicate) => currentStore().list<T>(name).find(predicate),
+    insert: (record) => currentStore().insert(name, record),
+    update: (id, changes) => currentStore().update<T>(name, id, changes),
+    remove: (id) => currentStore().remove(name, id),
+    reset: () => currentStore().reset(name),
     get size() {
-      return records.size;
+      return currentStore().size(name);
     },
   };
-
-  getRegistry().set(name, collection as unknown as Collection<never>);
-  return collection;
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { obligationsService, type ObligationFilter } from '@/modules/obligations/service';
 import { propertiesService } from '@/modules/properties/service';
@@ -13,7 +14,8 @@ export const metadata: Metadata = { title: 'Obligations & reminders · Holdfast'
 const FILTERS: readonly ObligationFilter[] = ['all', 'due-this-week', 'overdue', 'no-owner', 'paid'];
 
 /** FR-03, FR-08 — obligations and their reminder schedules. */
-export default function ObligationsPage() {
+export default async function ObligationsPage() {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
 
   const viewsByFilter = FILTERS.reduce(

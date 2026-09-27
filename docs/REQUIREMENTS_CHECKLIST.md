@@ -196,7 +196,7 @@ audit entry and revalidates. `tests/actions.test.ts` covers all of them.
 | **NFR-03** | Log edits, approvals, grants, exports and notification events with actor, time and record; protect logs from user modification | ⚠️ **Partial** | `accessService.record()` called by every mutating service and by exports. Log is append-only in the repository but **not access-restricted**. |
 | **NFR-04** | RPO 24h, RTO 8h; daily backups; restore test before go-live and quarterly | ❌ **Not started** | Operational. Continuity posture is displayed but not enacted. |
 | **NFR-05** | 99.5% availability; notification jobs start within 5 minutes of schedule | ❌ **Not started** | No scheduler or monitoring. |
-| **NFR-06** | 5 concurrent users, 50 properties, 250 leases, 100k transactions; p95 < 3s; 10k-row CSV staged < 2 min | ❌ **Not measured** | In-memory store will not meet 100k transactions; needs the database first. |
+| **NFR-06** | 5 concurrent users, 50 properties, 250 leases, 100k transactions; p95 < 3s; 10k-row CSV staged < 2 min | ❌ **Not measured** | Postgres persistence now exists (one JSONB row per record, every collection loaded once per request). Not load-tested; the per-request full load will need per-collection or indexed loading before 100k transactions. |
 | **NFR-07** | Responsive UI, keyboard access, labelled fields, clear validation, **no colour-only statuses**, Unicode, WCAG 2.2 AA target | ⚠️ **Partial** | Colour-only statuses eliminated; keyboard access on interactive rows; fields labelled; responsive verified. **No formal WCAG audit.** |
 | **NFR-08** | Define retention, deletion, export, processor access and data region; never send unapproved documents to a model; test malicious document instructions | ⚠️ **Partial** | Documents are hide-not-delete; assisted extraction is opt-in per document and defaults off. **No retention policy, no prompt-injection tests** (nothing reaches a model yet). |
 
@@ -211,7 +211,7 @@ audit entry and revalidates. `tests/actions.test.ts` covers all of them.
 | **UAT-03** | Paid or disputed obligations suppress queued messages; retries produce no duplicates | ✅ `tests/uat-03-reminders.test.ts` (10 tests) |
 | **UAT-04** | A delegate cannot retrieve restricted totals through direct URLs, exports, search or document links | ⚠️ `tests/uat-04-permissions.test.ts` (8 tests) — enforced at the module API, so URLs and exports are covered. **Search** is built and permission-filtered per category and per record scope (`tests/fr-09-search.test.ts`, 5 permission tests). **Document links are not built**, so that path is untested. |
 | **UAT-05** | Dashboard cash flow and net worth match independently calculated fixtures | ✅ `tests/uat-05-dashboard-fixtures.test.ts` (8 tests) |
-| **UAT-06** | Restore the deployment from backup and reconcile record counts and sample balances | ❌ **Not possible** — no persistence or backup exists |
+| **UAT-06** | Restore the deployment from backup and reconcile record counts and sample balances | ⚠️ **Partial** — records persist in Postgres when `DATABASE_URL` is set, so a provider backup and restore can be exercised; no backup schedule or restore procedure is defined |
 | **UAT-07** | Stale valuations, missing due dates and unmatched transactions are clearly flagged | ✅ `tests/uat-07-data-quality.test.ts` (10 tests) |
 
 **137 tests, all passing.** Run with `npm test`.

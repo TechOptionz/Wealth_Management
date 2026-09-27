@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { documentsService, type DocumentView } from '@/modules/documents/service';
 import { DocumentsScreen } from '@/modules/documents/components/DocumentsScreen';
 import type { DocumentFilter } from '@/modules/documents/model';
@@ -20,7 +21,8 @@ const FILTERS: readonly DocumentFilter[] = [
 ];
 
 /** FR-04 — document register with linkage and versions. */
-export default function DocumentsPage() {
+export default async function DocumentsPage() {
+  await loadUnitOfWork();
   const rowsByFilter = FILTERS.reduce(
     (accumulator, filter) => ({ ...accumulator, [filter]: documentsService.list(filter) }),
     {} as Record<DocumentFilter, readonly DocumentView[]>,

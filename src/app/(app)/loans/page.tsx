@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { entitiesService } from '@/modules/entities/service';
 import { propertiesService } from '@/modules/properties/service';
@@ -9,7 +10,8 @@ import { formatMonthShort, toDate } from '@/shared/lib/dates';
 export const metadata: Metadata = { title: 'Loans & liabilities · Holdfast' };
 
 /** FR-03, BR-04, FR-11 — facilities, ratios and receivables. */
-export default function LoansPage() {
+export default async function LoansPage() {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
 
   const rows: readonly LoanRow[] = loansService.list().map((loan) => ({

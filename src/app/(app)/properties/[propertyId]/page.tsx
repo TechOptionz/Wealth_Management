@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { notFound } from 'next/navigation';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { propertiesService } from '@/modules/properties/service';
@@ -19,6 +20,7 @@ interface PageProps {
 
 /** FR-02 — one property, its components, their leases and every linked record. */
 export default async function PropertyDetailPage({ params }: PageProps) {
+  await loadUnitOfWork();
   const { propertyId } = await params;
   const asOf = resolveAsOfDate();
 

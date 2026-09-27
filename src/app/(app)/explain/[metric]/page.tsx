@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { notFound } from 'next/navigation';
 import { renderGuarded } from '@/shared/components/AccessDenied';
 import { resolveAsOfDate } from '@/shared/config/app-config';
@@ -16,6 +17,7 @@ interface PageProps {
 
 /** FR-09 — "Drill-down must explain every total." */
 export default async function ExplainPage({ params, searchParams }: PageProps) {
+  await loadUnitOfWork();
   const { metric } = await params;
   const { asOf } = await searchParams;
 

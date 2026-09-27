@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { resolveAsOfDate } from '@/shared/config/app-config';
 import { entitiesService, type EntityFilter } from '@/modules/entities/service';
 import { propertiesService } from '@/modules/properties/service';
@@ -11,7 +12,8 @@ export const metadata: Metadata = { title: 'Entities & ownership · Holdfast' };
 const FILTERS: readonly EntityFilter[] = ['all', 'individual', 'company', 'trust', 'smsf'];
 
 /** FR-01, BR-02 — the ownership graph. */
-export default function EntitiesPage() {
+export default async function EntitiesPage() {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
 
   // Consolidated net positions come from the dashboard module, which owns the

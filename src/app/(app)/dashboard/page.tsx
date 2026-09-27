@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { loadUnitOfWork } from '@/server/db/unit-of-work';
 import { Banner } from '@/shared/components/Banner';
 import { Card, CardBody, CardHeader } from '@/shared/components/Card';
 import { Grid, Stack } from '@/shared/components/Layout';
@@ -29,6 +30,7 @@ interface PageProps {
  * portfolio rather than failing.
  */
 export default async function DashboardPage({ searchParams }: PageProps) {
+  await loadUnitOfWork();
   const asOf = resolveAsOfDate();
   const { entityId } = await searchParams;
   const requested = typeof entityId === 'string' ? entityId : undefined;

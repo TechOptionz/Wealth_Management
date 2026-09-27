@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'node:crypto';
 import { asId } from '@/shared/types/common';
-import { runAction, type ActionResult } from '@/shared/lib/action-result';
+import type { ActionResult } from '@/shared/lib/action-result';
+import { runAction } from '@/server/actions/run-action';
 import { readAmount, readChoice, readString, requireString } from '@/shared/lib/form-data';
 import { ValidationError } from '@/shared/lib/errors';
 import { accessService } from '@/modules/access/service';
