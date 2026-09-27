@@ -380,6 +380,52 @@ Choices that are not a straight copy, and why:
 - **The design-system page** now shows the dark swatches, since that is what the
   app renders, and its swatch hairline uses `var(--line)` instead of a literal.
 
+## 3.13 Mobile polish: a second additive stylesheet
+
+A mobile audit at ≤840px found places where the markup and the prototype's CSS
+disagreed, and places where the prototype hid something with no replacement. The
+five verbatim files are untouched (parity still 348/348). Rules the prototype
+has no equivalent for live in `src/styles/mobile.css`, imported last.
+
+| Finding | Fix |
+| --- | --- |
+| Four of the five bottom tabs rendered as links, but `.tabbar button` matches only buttons, so they missed the column layout, label size and gold active icon | `TabBar` renders every tab as a `<button>`, as the prototype does, and navigates with the router. Routes are prefetched on mount |
+| `.search{display:none}` left phones with no search at all | A search icon (`.search-toggle`) opens a sheet over the top bar. It focuses the input, reuses the same combobox, and closes on Escape, the scrim, the close button or a chosen result |
+| The account menu carried `.hide-m`, as in the prototype, so a tester on a phone could not switch persona | `.hide-m` removed. The prototype's account button was a placeholder; this one holds the NFR-01 persona switcher |
+| Notifications, account and search popovers were `absolute` under their button and could clip on a 360px screen | One `.pop` class. Below 840px it pins to the viewport, 12px from each edge, and stops above the tab bar |
+| Long tab strips gave no sign they scroll | `Tabs` sets `data-scroll` from its real scroll position, and `mobile.css` fades the overflowing edge. The selected tab scrolls into view |
+| A table column with an empty or non-text header printed an unlabelled value on mobile | `DataTable`'s column type now *requires* `mobileLabel` when the header is not text. An empty string header falls back to it |
+| Toolbars justified filters and actions apart, and they collided on narrow phones | `.toolbar` actions drop under the filters and share one full-width row with an 8–10px gap |
+| Small buttons in stacked table cards and filter pills were 30px tall | Raised to 36px below 840px. Stacked cells wrap |
+
+## 3.12 A second additive stylesheet: the Development Finance workspace
+
+The Development Finance section (see `docs/DEVELOPMENT_FINANCE.md`) needs
+things the prototype never drew: a monthly grid with a frozen item column and
+frozen summary columns, a project context bar, an invoice document/details
+split, a Gantt track and a sensitivity matrix. As with the modal, the rules live
+in their own file, `src/styles/finance.css`, imported after `modal.css`; the
+five verbatim files are untouched, so §5 still reports 348/348.
+
+| Rule | Reason |
+| --- | --- |
+| `.ctx-bar` | Project, scenario, model revision, currency, tax basis and freshness (§3.3 of the DF spec) without changing the shared top bar |
+| `.fin-wrap`, `.fin-grid`, `.fz`, `.fz-2`, `.fz-3`, `.month` | Sticky item column (260px) and summary columns (128px), 120px months, sticky header, 36px/44px rows |
+| `tr.group`, `tr.parent`, `tr.total`, `tr.closing`, `.lvl-N` | Hierarchy by weight, tint *and* the words "· summary" — not weight alone |
+| `td.actual` / `th.actual` | Actual months tinted with `--good-bg`, and the header also says "actual" (UI02) |
+| `.neg`, `.zero`, `.locked` | Red for outflows with a minus sign; faint dashes for zero; a dot on closed-period figures |
+| `.fin-legend` | The visible legend UI02 requires |
+| `.doc-split`, `.doc-preview` | 38/62 document/details split, stacking below 1180px (§3.3) |
+| `.gantt*` | Programme bars positioned by percentage of the project window |
+| `.matrix td.pos/.neg/.base` | Sensitivity cells better/worse than base, base outlined |
+| `.nav-sub`, `.nav-toggle` | Revenue and Costs children in the sidebar (§3.1) |
+
+Every colour is an existing token. The DF spec's proposed dark palette (§3.2 —
+`#0B0F12`, `#66C5C0` …) was **not** adopted: the app already follows the OS
+theme with the prototype's dark tokens, and a second palette would split the
+design system. This is recorded as a deliberate deviation in
+`docs/DEVELOPMENT_FINANCE.md` §4.
+
 ## 4. Deliberate improvements
 
 - **Real routing.** Each screen has a URL, so deep links, browser history and the

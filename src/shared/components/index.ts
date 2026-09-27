@@ -22,3 +22,5 @@ export { List, ListRow, DateBox } from './ListRow';
 export { Tabs } from './Tabs';
 export { TextField, SelectField, FieldGrid } from './Field';
 export { Modal, type ModalProps } from './Modal';
+export { FinanceGrid, type FinanceGridColumn, type FinanceGridRow, type FinanceGridCell } from './FinanceGrid';
+export { FinanceLegend, type FinanceLegendItem } from './FinanceLegend';

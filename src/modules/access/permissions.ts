@@ -28,7 +28,9 @@ export type Capability =
   | 'access.read'
   | 'access.write'
   | 'audit.read'
-  | 'export.create';
+  | 'export.create'
+  /** Development Finance: may open project screens. What a person may do inside a project is decided per project (`modules/projects`). */
+  | 'development.read';
 
 /**
  * Capabilities granted by each role. Deny by default: anything not listed here
@@ -51,6 +53,7 @@ const ROLE_CAPABILITIES: Record<AccessRole, readonly Capability[]> = {
     'access.write',
     'audit.read',
     'export.create',
+    'development.read',
   ],
   // Operational work on assigned properties only — explicitly no portfolio totals.
   'operations-delegate': [
@@ -61,9 +64,12 @@ const ROLE_CAPABILITIES: Record<AccessRole, readonly Capability[]> = {
     'expense.read',
     'document.read',
     'bank-import.read',
+    'development.read',
   ],
   // Assigned tasks and budgets; no sensitive totals unless separately granted.
-  'family-contributor': ['obligation.read'],
+  // `development.read` only opens the door: a development project shows this
+  // person nothing unless they hold a membership on it (an investor, typically).
+  'family-contributor': ['obligation.read', 'development.read'],
   // Approved records and exports, read-only. No messaging, edits or grants.
   'accountant-readonly': [
     'property.read',
@@ -74,6 +80,7 @@ const ROLE_CAPABILITIES: Record<AccessRole, readonly Capability[]> = {
     'loan.read',
     'entity.read',
     'export.create',
+    'development.read',
   ],
   // Deployment and recovery. No routine business data — access is an audited exception.
   'technical-operator': ['audit.read'],

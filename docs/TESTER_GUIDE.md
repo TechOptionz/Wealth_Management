@@ -168,7 +168,10 @@ Other places to know about:
   dashboard figure. Metrics: `net-worth`, `assets`, `liabilities`, `arrears`,
   `upcoming-obligations`, `operating-expenses`.
 - **Search** — the box in the top bar. Searches properties, tenants, obligations,
-  loans and documents. Needs at least 2 characters. Hidden on phone widths by design.
+  loans and documents. Needs at least 2 characters. Choosing a result opens that
+  exact record: a property opens its page; a tenant, obligation, loan or document
+  opens its list screen with the record selected, highlighted and scrolled into
+  view. Hidden on phone widths by design.
 - **Notifications bell** — top bar. Lists overdue rent, overdue obligations,
   obligations due within 14 days, and one rolled-up line for unmatched bank rows.
 - **Mobile tab bar** — Home, Money, Property, Tasks, More. Screens without their own
@@ -676,7 +679,7 @@ Each is a business rule from the requirements. For each, a way to check it.
 | Loans | Amortisation schedules, rate-change history, offset accounts, editing or closing a facility, creating a pooled facility from the form | Add-only. |
 | Entities | Editing or ending an entity or relationship; refusing owners that exceed 100%; multi-level company ownership; contact details | Add-only. |
 | Obligations | Full recurrence expansion (only the next instance is created, on payment) | One instance ahead. |
-| Search | Fuzzy matching; highlighting; entities and expenses; per-record pages for tenants, obligations, loans and documents | Exact-word matching; results link to the list screen. Hidden on phones. |
+| Search | Fuzzy matching; highlighting; entities, expenses and projects | Exact-word matching. A tenant, obligation, loan or document result opens its list screen with that record selected and highlighted. Hidden on phones. |
 | Multi-currency, tax, depreciation, CGT | Not modelled | AUD only; no tax figures. |
 | Operations | Backups, retention policy, monitoring, load testing, formal WCAG audit | Continuity posture is displayed only. |
 

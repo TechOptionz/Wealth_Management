@@ -23,6 +23,17 @@ const CATEGORY_ICONS: Record<SearchCategory, IconName> = {
 
 type SearchStatus = 'idle' | 'loading' | 'ready' | 'error';
 
+export interface GlobalSearchProps {
+  /** Focus the input as soon as it mounts — the mobile sheet opens straight into typing. */
+  readonly autoFocus?: boolean;
+  /**
+   * Called when the person is done here: a result was chosen, or Escape was
+   * pressed with the menu already closed. The mobile search sheet uses it to
+   * close itself; the desktop bar has no need of it.
+   */
+  readonly onDismiss?: () => void;
+}
+
 /**
  * Top-bar global search (FR-09).
  *
@@ -30,8 +41,11 @@ type SearchStatus = 'idle' | 'loading' | 'ready' | 'error';
  * at the highlighted option, so arrow keys, Enter and Escape work without the
  * user ever leaving the field. Presentation only — matching and permission
  * filtering happen behind `/api/search`.
+ *
+ * Rendered twice by the shell: in the top bar (hidden by the design below
+ * 840px) and inside the mobile search sheet that replaces it there.
  */
-export function GlobalSearch() {
+export function GlobalSearch({ autoFocus = false, onDismiss }: GlobalSearchProps = {}) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<SearchStatus>('idle');
@@ -117,6 +131,7 @@ export function GlobalSearch() {
     close();
     inputRef.current?.blur();
     router.push(result.href);
+    onDismiss?.();
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
@@ -142,11 +157,21 @@ export function GlobalSearch() {
         return;
       }
       case 'Escape': {
-        if (!isOpen && query === '') return;
+        // First Escape dismisses the menu; a second hands back to the host
+        // (the mobile sheet closes) or, in the bare top bar, clears the field.
+        if (isOpen) {
+          event.preventDefault();
+          close();
+          return;
+        }
+        if (onDismiss) {
+          event.preventDefault();
+          onDismiss();
+          return;
+        }
+        if (query === '') return;
         event.preventDefault();
-        // First Escape dismisses the menu; a second clears the field.
-        if (isOpen) close();
-        else handleChange('');
+        handleChange('');
         return;
       }
       default:
@@ -177,6 +202,8 @@ export function GlobalSearch() {
         aria-activedescendant={isOpen && activeIndex >= 0 ? optionId(activeIndex) : undefined}
         autoComplete="off"
         spellCheck={false}
+        // Only the mobile sheet sets this: it exists to be typed into and opened on a tap.
+        autoFocus={autoFocus}
         onChange={(event) => handleChange(event.target.value)}
         onFocus={() => {
           if (status !== 'idle') setIsOpen(true);
@@ -185,18 +212,10 @@ export function GlobalSearch() {
       />
 
       <div
-        className="card"
+        // `.card` is the surface; `.pop` (src/styles/mobile.css) anchors the
+        // menu under the field and, below 840px, pins it full-width under the sheet.
+        className="card pop results"
         hidden={!isOpen}
-        // Positioning only — the surface, radius and shadow come from `.card`.
-        style={{
-          position: 'absolute',
-          top: 'calc(100% + 6px)',
-          right: 0,
-          width: 'min(420px, 90vw)',
-          maxHeight: '70vh',
-          overflowY: 'auto',
-          color: 'var(--text)',
-        }}
         // Keep focus in the input so a click never blurs the combobox closed.
         onMouseDown={(event) => event.preventDefault()}
       >

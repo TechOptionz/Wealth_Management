@@ -1,5 +1,6 @@
 'use client';
 
+import { useScrollToSelectedRow } from '@/shared/components/useScrollToSelectedRow';
 import { useMemo, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { FilterGroup } from '@/shared/components/FilterGroup';
@@ -31,6 +32,8 @@ export interface ObligationsScreenProps {
   readonly properties: readonly NamedRecord[];
   readonly documents: readonly NamedRecord[];
   readonly today: string;
+  /** True when `initialSelectedId` came from a search result, so the row is scrolled into view. */
+  readonly scrollToSelected?: boolean;
 }
 
 const FILTER_OPTIONS: readonly { value: ObligationFilter; label: string }[] = [
@@ -52,10 +55,12 @@ export function ObligationsScreen({
   properties,
   documents,
   today,
+  scrollToSelected = false,
 }: ObligationsScreenProps) {
   const [filter, setFilter] = useState<ObligationFilter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [isCreating, setCreating] = useState(false);
+  useScrollToSelectedRow(scrollToSelected ? initialSelectedId : null);
 
   const rows = viewsByFilter[filter];
   const selected = useMemo(

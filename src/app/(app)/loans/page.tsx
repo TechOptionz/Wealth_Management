@@ -6,13 +6,20 @@ import { propertiesService } from '@/modules/properties/service';
 import { loansService } from '@/modules/loans/service';
 import { LoansScreen, type LoanRow } from '@/modules/loans/components/LoansScreen';
 import { formatMonthShort, toDate } from '@/shared/lib/dates';
+import { firstParam } from '@/shared/lib/search-params';
 
 export const metadata: Metadata = { title: 'Loans & liabilities · Holdfast' };
 
+interface PageProps {
+  /** `?loan=<id>` highlights that facility — where a search result lands. */
+  readonly searchParams: Promise<{ readonly loan?: string | readonly string[] }>;
+}
+
 /** FR-03, BR-04, FR-11 — facilities, ratios and receivables. */
-export default async function LoansPage() {
+export default async function LoansPage({ searchParams }: PageProps) {
   await loadUnitOfWork();
   const asOf = resolveAsOfDate();
+  const focusLoanId = firstParam((await searchParams).loan);
 
   const rows: readonly LoanRow[] = loansService.list().map((loan) => ({
     loan,
@@ -31,6 +38,8 @@ export default async function LoansPage() {
 
   return (
     <LoansScreen
+      key={focusLoanId ?? 'none'}
+      focusLoanId={focusLoanId}
       rows={rows}
       totalDebt={loansService.totalDebt()}
       facilityCount={rows.filter((row) => row.loan.direction === 'liability').length}

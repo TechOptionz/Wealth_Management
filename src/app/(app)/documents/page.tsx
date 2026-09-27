@@ -7,6 +7,7 @@ import { propertiesService } from '@/modules/properties/service';
 import { entitiesService } from '@/modules/entities/service';
 import { obligationsService } from '@/modules/obligations/service';
 import { resolveAsOfDate } from '@/shared/config/app-config';
+import { firstParam } from '@/shared/lib/search-params';
 
 export const metadata: Metadata = { title: 'Documents · Holdfast' };
 
@@ -20,9 +21,15 @@ const FILTERS: readonly DocumentFilter[] = [
   'unlinked',
 ];
 
+interface PageProps {
+  /** `?document=<id>` highlights that document — where a search result lands. */
+  readonly searchParams: Promise<{ readonly document?: string | readonly string[] }>;
+}
+
 /** FR-04 — document register with linkage and versions. */
-export default async function DocumentsPage() {
+export default async function DocumentsPage({ searchParams }: PageProps) {
   await loadUnitOfWork();
+  const focusDocumentId = firstParam((await searchParams).document);
   const rowsByFilter = FILTERS.reduce(
     (accumulator, filter) => ({ ...accumulator, [filter]: documentsService.list(filter) }),
     {} as Record<DocumentFilter, readonly DocumentView[]>,
@@ -43,6 +50,8 @@ export default async function DocumentsPage() {
 
   return (
     <DocumentsScreen
+      key={focusDocumentId ?? 'none'}
+      focusDocumentId={focusDocumentId}
       rowsByFilter={rowsByFilter}
       counts={documentsService.counts()}
       linkTargets={linkTargets}

@@ -54,6 +54,20 @@ access → entities → properties → loans → leases → shared-bills
                                               dashboard
 ```
 
+Development Finance modules follow their own chain, below `access`:
+
+```
+projects → budgets → commitments → invoices ─┐
+        → programme → sales ─────────────────┼→ project-model → scenarios → reports, assistant
+        → funding ───────────────────────────┘
+```
+
+Every Development Finance figure comes from one `CalculationRun` produced by
+`project-model` with `@/shared/finance-engine`; no other file may add up months
+or derive a KPI. Every DF `api.ts` and action calls
+`accessService.guard('development.read')` and then
+`projectsService.guard(projectId, permission)`. See `docs/DEVELOPMENT_FINANCE.md`.
+
 `dashboard` composes everything and is depended on by nothing. If you find
 yourself needing an upward import, the logic probably belongs in `dashboard` or
 in the page that composes both modules.

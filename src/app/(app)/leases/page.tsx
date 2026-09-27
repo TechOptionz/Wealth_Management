@@ -6,15 +6,22 @@ import { LeasesScreen } from '@/modules/leases/components/LeasesScreen';
 import { leasesRepository } from '@/modules/leases/repository';
 import { propertiesService } from '@/modules/properties/service';
 import { PROPERTY_IDS, COMPONENT_IDS } from '@/modules/properties/data/seed';
+import { firstParam } from '@/shared/lib/search-params';
 
 export const metadata: Metadata = { title: 'Leases & tenants · Holdfast' };
 
 const FILTERS: readonly LeaseFilter[] = ['active', 'ending-soon', 'ended'];
 
+interface PageProps {
+  /** `?lease=<id>` opens the screen on that lease — where a search result lands. */
+  readonly searchParams: Promise<{ readonly lease?: string | readonly string[] }>;
+}
+
 /** FR-05 — leases and tenants. */
-export default async function LeasesPage() {
+export default async function LeasesPage({ searchParams }: PageProps) {
   await loadUnitOfWork();
   const asOf = resolveAsOfDate();
+  const focusLeaseId = firstParam((await searchParams).lease);
 
   const viewsByFilter = FILTERS.reduce(
     (accumulator, filter) => ({ ...accumulator, [filter]: leasesService.listViews(asOf, filter) }),
@@ -23,6 +30,9 @@ export default async function LeasesPage() {
 
   return (
     <LeasesScreen
+      // Remount on a new target so the screen re-reads which lease to open.
+      key={focusLeaseId ?? 'none'}
+      focusLeaseId={focusLeaseId}
       viewsByFilter={viewsByFilter}
       counts={leasesService.counts(asOf)}
       newLease={{

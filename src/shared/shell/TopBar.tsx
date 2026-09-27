@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/shared/components/Icon';
 import { VIEW_TITLES, viewFromPathname } from '@/shared/config/navigation';
@@ -46,6 +47,19 @@ export function TopBar({
   const drawerId = useId();
   const unreadNotifications = notifications.filter((item) => !readIds.has(item.id)).length;
 
+  // Mobile search sheet. The design hides `.search` below 840px; the toggle and
+  // sheet exist only there (see `.search-toggle` in src/styles/mobile.css).
+  const [isSearchOpen, setSearchOpen] = useState(false);
+  const searchToggleRef = useRef<HTMLButtonElement>(null);
+  const closeSearch = (): void => {
+    setSearchOpen(false);
+    searchToggleRef.current?.focus();
+  };
+  const onSheetKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
+    // The input handles its own Escape; this catches it on the close button.
+    if (event.key === 'Escape' && !event.defaultPrevented) closeSearch();
+  };
+
   useEffect(() => {
     if (!isOpen) return undefined;
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -88,6 +102,35 @@ export function TopBar({
       </div>
 
       <GlobalSearch />
+
+      <button
+        ref={searchToggleRef}
+        className="icon-btn search-toggle"
+        aria-label="Search"
+        aria-expanded={isSearchOpen}
+        onClick={() => setSearchOpen(true)}
+        type="button"
+      >
+        <Icon name="i-search" />
+      </button>
+
+      {/* Portalled so the scrim and sheet sit above the sidebar and tab bar,
+          outside the sticky top bar's stacking context. Only ever opened by a
+          click, so `document` always exists here. */}
+      {isSearchOpen
+        ? createPortal(
+            <>
+              <div className="scrim show search-scrim" aria-hidden="true" onClick={closeSearch} />
+              <div className="search-sheet" role="dialog" aria-label="Search" onKeyDown={onSheetKeyDown}>
+                <GlobalSearch autoFocus onDismiss={closeSearch} />
+                <button className="icon-btn" type="button" aria-label="Close search" onClick={closeSearch}>
+                  <Icon name="i-x" />
+                </button>
+              </div>
+            </>,
+            document.body,
+          )
+        : null}
 
       <div ref={bellRootRef} style={{ position: 'relative' }}>
         <button

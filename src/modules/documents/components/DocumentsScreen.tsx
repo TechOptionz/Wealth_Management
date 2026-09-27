@@ -1,5 +1,6 @@
 'use client';
 
+import { useScrollToSelectedRow } from '@/shared/components/useScrollToSelectedRow';
 import { useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -35,11 +36,14 @@ export interface DocumentsScreenProps {
   readonly rowsByFilter: Record<DocumentFilter, readonly DocumentView[]>;
   readonly counts: Record<DocumentFilter, number>;
   readonly linkTargets: readonly LinkTarget[];
+  /** A document to highlight on arrival, e.g. from a global search result. */
+  readonly focusDocumentId?: string;
 }
 
 /** FR-04 — the document register. */
-export function DocumentsScreen({ rowsByFilter, counts, linkTargets }: DocumentsScreenProps) {
+export function DocumentsScreen({ rowsByFilter, counts, linkTargets, focusDocumentId }: DocumentsScreenProps) {
   const [filter, setFilter] = useState<DocumentFilter>('all');
+  useScrollToSelectedRow(focusDocumentId);
   const [panel, setPanel] = useState<
     | { readonly kind: 'register' }
     | { readonly kind: 'link'; readonly view: DocumentView }
@@ -232,6 +236,8 @@ export function DocumentsScreen({ rowsByFilter, counts, linkTargets }: Documents
           columns={columns}
           rows={rowsByFilter[filter]}
           rowKey={(row) => row.record.id}
+          isRowSelected={(row) => row.record.id === focusDocumentId}
+          rowStyle={(row) => (row.record.id === focusDocumentId ? { background: 'var(--gold-soft)' } : undefined)}
           empty="No documents match this filter."
         />
       </Card>

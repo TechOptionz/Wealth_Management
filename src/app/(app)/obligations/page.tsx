@@ -8,15 +8,22 @@ import { ObligationsScreen } from '@/modules/obligations/components/ObligationsS
 import { accessService } from '@/modules/access/service';
 import { documentsService } from '@/modules/documents/service';
 import type { TimelineEntry } from '@/shared/components/Timeline';
+import { firstParam } from '@/shared/lib/search-params';
 
 export const metadata: Metadata = { title: 'Obligations & reminders · Holdfast' };
 
 const FILTERS: readonly ObligationFilter[] = ['all', 'due-this-week', 'overdue', 'no-owner', 'paid'];
 
+interface PageProps {
+  /** `?obligation=<id>` opens the screen on that obligation — where a search result lands. */
+  readonly searchParams: Promise<{ readonly obligation?: string | readonly string[] }>;
+}
+
 /** FR-03, FR-08 — obligations and their reminder schedules. */
-export default async function ObligationsPage() {
+export default async function ObligationsPage({ searchParams }: PageProps) {
   await loadUnitOfWork();
   const asOf = resolveAsOfDate();
+  const focusId = firstParam((await searchParams).obligation);
 
   const viewsByFilter = FILTERS.reduce(
     (accumulator, filter) => ({ ...accumulator, [filter]: obligationsService.listViews(asOf, filter) }),
@@ -48,12 +55,16 @@ export default async function ObligationsPage() {
     }),
   );
 
-  // The design opens with the next obligation carrying a queued reminder.
+  // A search result names the obligation to open; otherwise the design opens
+  // with the next obligation carrying a queued reminder.
   const initialSelected =
+    all.find((view) => view.obligation.id === focusId)?.obligation.id ??
     all.find((view) => view.status === 'reminder-queued')?.obligation.id ?? all[0]?.obligation.id ?? null;
 
   return (
     <ObligationsScreen
+      key={focusId ?? 'none'}
+      scrollToSelected={Boolean(focusId)}
       viewsByFilter={viewsByFilter}
       counts={obligationsService.counts(asOf)}
       timelines={timelines}

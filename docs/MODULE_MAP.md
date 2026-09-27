@@ -20,6 +20,17 @@ code.
 | `dashboard` | `PortfolioSnapshot` | FR-09, FR-11, BR-01, BR-02, BR-03 | all of the above | `/dashboard`, `/explain/[metric]` |
 | `search` | nothing — read model; wire types in `shared/types/search.ts` | FR-09, NFR-01 | `access`, `properties`, `leases`, `obligations`, `loans`, `documents` | top bar · `/api/search` |
 | `design-system` | reference data only | NFR-07 | — | `/design-system` |
+| `projects` | `Organisation`, `LegalEntity`, `Project`, `ProjectPolicy`, `ProjectAccess` | DF IAM01–04, PRJ01–05, CF06, CF07 | `access` | `/projects`, `/projects/[id]/settings` |
+| `budgets` | `CostCategory`, `CostLine`, `BudgetAdjustment`, `BudgetVersion`, `ForecastBatch` | DF CST01–02, CST08, CF03–04, CF07, CF09, PRJ05 | `projects`, `access` | `/projects/[id]/costs`, `/costs/[categoryId]` |
+| `commitments` | `Supplier`, `Commitment`, `Variation` | DF CST03–05 | `budgets`, `projects` | Invoices → Commitments tab |
+| `invoices` | `InvoiceIntake`, `Invoice`, `InvoiceRevision`, `ApprovalDecision`, `Payment`, `SettlementAllocation`, `RetentionTranche`, `ReconciliationItem`, `PaymentImport`, `OutboxEvent` | DF INV01–15, CST06–07, CAL06–07 | `commitments`, `budgets`, `projects` | `/projects/[id]/invoices` |
+| `programme` | `Milestone`, `TaskDependency` | DF PRG01–04 | `projects` | `/projects/[id]/programme` |
+| `sales` | `RevenueGroup`, `Unit`, `SaleContract`, `RevenueEvent`, `OtherIncome`, `CommissionRule` | DF YLD01–06, REV01, CAL12 | `programme`, `projects` | `/projects/[id]/yield`, `/revenue`, `/revenue/[groupId]` |
+| `funding` | `DebtFacility`, `FacilityMovement`, `EquityParticipant`, `EquityMovement`, `WaterfallVersion` | DF FIN01–06, EQ01–03, WFL01–04 | `projects` | `/projects/[id]/finance` |
+| `project-model` | `CalculationRun` | DF CAL01–20, CF01–06, CF08, SUM01–03, PRG03, PRJ04 | all DF modules above | `/projects/[id]/cashflow`, `/summary` |
+| `scenarios` | `Scenario`, `ScenarioVersion` | DF SCN01–06 | `project-model` + the modules it promotes into | `/projects/[id]/scenarios` |
+| `reports` | `ReportJob` | DF RPT01–04 | `project-model`, `scenarios`, registers | `/projects/[id]/reports` |
+| `assistant` | `AssistantRequest` | DF AI01–03, AI06–08 | `project-model`, registers | `/projects/[id]/assistant` |
 
 ## Who owns which concept
 
@@ -52,6 +63,17 @@ code.
 | What the top-bar bell lists, and who may see it | `dashboard/notifications.ts` |
 | Net worth, assets, liabilities | `dashboard` |
 | Per-entity consolidated position | `dashboard` |
+| **Development Finance** | |
+| Whether a person may act on a project | `projects/permissions.ts` (matrix) · `projectsService.guard` |
+| Who may approve an invoice of a given value | `projectsService.canApprove` (the approval limit, IAM04) |
+| Actuals cutoff and locked periods | `projects` (`ProjectPolicy.actualsCutoff`) |
+| A cost line's current budget | `budgets` (original + adjustments, derived) |
+| Expected final cost, approved unpaid, remaining cash | `project-model` (engine `costLinePosition`) |
+| Any monthly figure, KPI or IRR | `project-model` — one `CalculationRun`, never recomputed elsewhere |
+| Invoice review, sync and settlement state | `invoices` (three separate fields; settlement derived) |
+| Restricted trust deposits | `sales` (`RevenueEvent.restricted`) |
+| Interest, capacity, breaches | `funding` (engine `runFacilityLedger`) |
+| Pure financial formulas | `shared/finance-engine` (F01–F12 in `tests/df-engine-fixtures.test.ts`) |
 
 ## Shared kernel
 
@@ -67,6 +89,8 @@ code.
 | `shared/types/common.ts` | Branded ids, `Provenance`, `Tone` | No module imports allowed here |
 | `shared/config/app-config.ts` | As-of date, currency, thresholds | `STALE_VALUATION_MONTHS`, `UPCOMING_WINDOW_DAYS` |
 | `shared/config/navigation.ts` | Nav model | Drives sidebar, tab bar, page titles |
+| `shared/finance-engine/` | Decimal, tax, allocation, cost position, schedules, interest, returns, profit, settlement, waterfall, funding | Pure; the only place DF formulas live. `ENGINE_VERSION` |
+| `server/http/v1.ts` | `/api/v1` envelope: decimal-string money, `request_id`, `If-Match`, `Idempotency-Key` | API01–API03 |
 | `shared/components/` | Design-system primitives | See below |
 | `shared/shell/` | `AppShell`, `Sidebar`, `TopBar`, `TabBar`, `Scrim`, toast + nav context | |
 
@@ -89,6 +113,7 @@ code.
 | `Tabs` | `.tabs` | Underlined tab strip |
 | `TextField` / `SelectField` / `FieldGrid` | `.field`, `.fgrid` | Forms with hint and error states |
 | `Stack` / `Row` / `Grid` / `Stat` / `Sub` | `.stack`, `.row`, `.grid` | Layout primitives |
+| `FinanceGrid` / `FinanceLegend` | `.fin-grid`, `.fin-legend` (`finance.css`) | Frozen-column monthly grid and its legend (CF01, UI02) |
 
 ## Server infrastructure
 

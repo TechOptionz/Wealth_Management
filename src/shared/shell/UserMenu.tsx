@@ -69,7 +69,9 @@ export function UserMenu({
   }, [isOpen]);
 
   return (
-    <div ref={rootRef} className="hide-m" style={{ position: 'relative' }}>
+    // Shown at every width: a tester on a phone must be able to switch persona
+    // (FR-01 / NFR-01), and the drawer footer only *names* the current user.
+    <div ref={rootRef} style={{ position: 'relative' }}>
       <button
         className="icon-btn"
         aria-label={`Account · ${currentUserName}, ${currentUserRoleLabel}`}
@@ -83,12 +85,9 @@ export function UserMenu({
         </div>
       </button>
 
-      <div
-        id={menuId}
-        className="card"
-        hidden={!isOpen}
-        style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 320, zIndex: 30 }}
-      >
+      {/* `.pop` (src/styles/mobile.css) anchors the card under the avatar and,
+          below 840px, pins it to the viewport so a 360px screen never clips it. */}
+      <div id={menuId} className="card pop account" hidden={!isOpen}>
         <div className="card-h">
           <h3>{currentUserName}</h3>
           <Chip tone="gold" icon="i-users">

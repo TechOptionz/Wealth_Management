@@ -37,10 +37,14 @@ export function Grid({
   );
 }
 
-/** Toolbar pattern: a filter group on the left, a primary action on the right. */
+/**
+ * Toolbar pattern: a filter group on the left, a primary action on the right.
+ * Below 840px (`.toolbar` in src/styles/mobile.css) the actions drop under the
+ * filters and share one full-width row, so nothing collides on a phone.
+ */
 export function Toolbar({ children }: { readonly children: ReactNode }) {
   return (
-    <div className="row" style={{ justifyContent: 'space-between' }}>
+    <div className="row toolbar" style={{ justifyContent: 'space-between' }}>
       {children}
     </div>
   );

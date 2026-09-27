@@ -9,6 +9,7 @@ import { sharedBillsService } from '@/modules/shared-bills/service';
 import { initialsOf } from '@/shared/components/Avatar';
 import { ROLE_LABELS } from '@/modules/access/model';
 import { dashboardService } from '@/modules/dashboard/service';
+import { developmentNav } from '@/modules/project-model/navigation';
 import { getNotifications } from '@/modules/dashboard/notifications';
 import { switchUserAction } from '@/modules/access/actions';
 import type { AccessRole } from '@/modules/access/model';
@@ -36,6 +37,7 @@ export default async function AppLayout({ children }: { readonly children: React
   await loadUnitOfWork();
   const asOfDate = resolveAsOfDate();
   const currentUser = accessService.getCurrentUser();
+  const developmentProjects = developmentNav(currentUser.id);
 
   return (
     <AppShell
@@ -44,7 +46,9 @@ export default async function AppLayout({ children }: { readonly children: React
         openObligations: obligationsService.openCount(asOfDate),
         unmatchedTransactions: reconciliationService.unmatchedCount(),
         billsNeedingReview: sharedBillsService.counts()['needs-review'],
+        invoicesAwaitingApproval: developmentProjects.reduce((sum, project) => sum + project.awaitingApproval, 0),
       }}
+      projects={developmentProjects}
       scopeLabel="Whole portfolio · all entities"
       scopeOptions={dashboardService.scopeOptions()}
       currentUserName={currentUser.name}

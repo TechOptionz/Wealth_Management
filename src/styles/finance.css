@@ -1,0 +1,93 @@
+/* Additions beyond the design prototype for the Development Finance workspace.
+   The prototype has no frozen-column financial grid, project context bar,
+   document/details split or Gantt track, so these cannot be ported from it.
+   They live here, outside the five verbatim files, so the byte-identical check
+   in docs/DESIGN_FIDELITY.md still holds. Everything composes the prototype's
+   tokens; there are no literal colours. See docs/DESIGN_FIDELITY.md §3.12. */
+
+/* ---------- Project context bar (§3.3 top-bar facts) ---------- */
+.ctx-bar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:10px 16px;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);font-size:12.5px;color:var(--muted)}
+.ctx-bar b{color:var(--text);font-weight:500}
+.ctx-bar .ctx-sep{width:1px;height:16px;background:var(--line)}
+.ctx-bar .ctx-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ---------- Financial grid (CF01, §3.3) ---------- */
+.fin-wrap{overflow:auto;max-height:calc(100vh - 300px);border-radius:0 0 var(--r-lg) var(--r-lg)}
+.fin-grid{border-collapse:separate;border-spacing:0;min-width:100%;font-size:13px}
+.fin-grid th,.fin-grid td{padding:0 12px;height:36px;border-bottom:1px solid var(--line-2);white-space:nowrap;background:var(--surface);vertical-align:middle}
+.fin-grid.comfortable th,.fin-grid.comfortable td{height:44px}
+.fin-grid th{position:sticky;top:0;z-index:3;color:var(--muted);font-weight:500;font-size:12px;text-align:left;border-bottom:1px solid var(--line)}
+.fin-grid th small{display:block;font-size:10.5px;color:var(--faint);font-weight:400}
+.fin-grid .fz{position:sticky;left:0;z-index:2;box-shadow:inset -1px 0 0 var(--line);min-width:260px;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.fin-grid th.fz{z-index:4}
+.fin-grid .fz-2{left:260px;min-width:128px;max-width:128px}
+.fin-grid .fz-3{left:388px;min-width:128px;max-width:128px}
+.fin-grid .month{min-width:120px}
+.fin-grid td.r,.fin-grid th.r{text-align:right}
+.fin-grid tr.group td{background:var(--surface-2);font-weight:600;color:var(--text)}
+.fin-grid tr.total td{background:var(--surface-2);font-weight:600;border-top:1px solid var(--line)}
+.fin-grid tr.parent td{color:var(--text-2)}
+.fin-grid tr.parent td.fz::after{content:" · summary";color:var(--faint);font-size:11px}
+.fin-grid tr.closing td{font-weight:600;border-top:2px solid var(--line)}
+.fin-grid .lvl-1{padding-left:24px}
+.fin-grid .lvl-2{padding-left:40px}
+.fin-grid .lvl-3{padding-left:56px}
+.fin-grid td.actual,.fin-grid th.actual{background:var(--good-bg)}
+.fin-grid tr.group td.actual,.fin-grid tr.total td.actual{background:var(--good-bg)}
+.fin-grid td.locked::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-left:6px;vertical-align:middle}
+.fin-grid a.cell,.fin-grid button.cell{display:block;width:100%;text-align:inherit;color:inherit;font:inherit;padding:0;background:none;border:0;text-decoration:none;cursor:pointer}
+.fin-grid a.cell:hover,.fin-grid button.cell:hover{text-decoration:underline}
+.fin-grid .neg{color:var(--bad)}
+.fin-grid .zero{color:var(--faint)}
+.fin-grid input.cell-input{width:100%;height:28px;border:1px solid var(--gold);border-radius:6px;padding:0 8px;background:var(--surface);color:var(--text);text-align:right;font:inherit}
+
+/* ---------- Legend (UI02) ---------- */
+.fin-legend{display:flex;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap;align-items:center}
+.fin-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line)}
+
+/* ---------- Invoice review split (§3.3: document ≈38%) ---------- */
+.doc-split{display:grid;grid-template-columns:38fr 62fr;gap:16px;align-items:start}
+.doc-preview{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);min-height:420px;display:grid;place-items:center;color:var(--muted);font-size:13px;padding:16px;text-align:center}
+.doc-preview b{display:block;color:var(--text);font-size:15px;margin-bottom:4px}
+
+/* ---------- Programme Gantt (PRG01) ---------- */
+.gantt{display:grid;gap:6px;padding:12px 18px}
+.gantt-row{display:grid;grid-template-columns:220px 1fr;align-items:center;gap:12px;font-size:12.5px}
+.gantt-row.stage b{font-weight:600}
+.gantt-track{position:relative;height:18px;background:var(--surface-2);border-radius:4px;border:1px solid var(--line-2)}
+.gantt-bar{position:absolute;top:3px;bottom:3px;border-radius:3px;background:var(--bar)}
+.gantt-bar.actual{background:var(--good)}
+.gantt-bar.late{background:var(--warn)}
+.gantt-mark{position:absolute;top:4px;width:10px;height:10px;background:var(--gold);transform:rotate(45deg);border-radius:2px}
+.gantt-axis{display:grid;grid-template-columns:220px 1fr;font-size:11px;color:var(--faint)}
+.gantt-axis>div:last-child{display:flex;justify-content:space-between}
+
+/* ---------- Sensitivity matrix (SCN06) and comparison ---------- */
+.matrix td.pos{background:var(--good-bg)}
+.matrix td.neg{background:var(--bad-bg)}
+.matrix td.base{outline:2px solid var(--gold);outline-offset:-2px}
+
+/* ---------- Sidebar project children (§3.1 Revenue / Costs) ---------- */
+.nav-sub{padding-left:38px;font-size:12.5px}
+.nav-toggle{justify-content:space-between}
+.nav-toggle svg:last-child{transition:transform .15s}
+.nav-toggle[aria-expanded="true"] svg:last-child{transform:rotate(90deg)}
+
+@media (max-width:1180px){
+  .doc-split{grid-template-columns:1fr}
+  .fin-wrap{max-height:none}
+  .gantt-row{grid-template-columns:140px 1fr}
+  .gantt-axis{grid-template-columns:140px 1fr}
+}
+@media (max-width:840px){
+  .fin-grid .fz{min-width:160px;max-width:160px}
+  .fin-grid .fz-2{left:160px}
+  .fin-grid .fz-3{left:288px}
+  .ctx-bar{gap:6px 12px;font-size:12px}
+  .ctx-bar .ctx-actions{margin-left:0;width:100%}
+}
+@media print{
+  .fin-wrap{max-height:none;overflow:visible}
+  .fin-grid th,.fin-grid .fz{position:static;box-shadow:none}
+  .no-print{display:none !important}
+}

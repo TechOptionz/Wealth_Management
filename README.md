@@ -68,6 +68,25 @@ Ten screens, each backed by its own feature module:
 A JSON API mirrors the read models under `/api/*` — see
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#http-api).
 
+### Development Finance
+
+A second section, built from `Development_Finance_Requirements.docx`, for
+Australian property developers: feasibility, budgets, commitments, invoice
+approval, programme, unit sales, debt and equity, scenarios, reports and a
+read-only Assistant, all on one auditable project model. Open **Projects** in
+the sidebar; the seeded project is *Riverside Townhomes* (`RVT-01`).
+
+| Screen | Route |
+| --- | --- |
+| Projects and setup | `/projects` |
+| Cashflow · Summary · Invoices · Programme · Yield · Finance · Scenarios · Reports · Assistant | `/projects/[id]/…` |
+| Cost register, revenue register, settings | `/projects/[id]/costs`, `/revenue`, `/settings` |
+
+A versioned API lives under `/api/v1` (decimal-string money, `If-Match`,
+`Idempotency-Key`). Accounting connections, email capture, extraction and a
+language-model provider are deferred. Requirement-by-requirement status is in
+[`docs/DEVELOPMENT_FINANCE.md`](docs/DEVELOPMENT_FINANCE.md).
+
 ## The rules the app enforces
 
 These are load-bearing. They are implemented in types, not just in prose:
@@ -115,6 +134,7 @@ These are load-bearing. They are implemented in types, not just in prose:
 | [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md) | Every module, what it owns, what it depends on |
 | [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) | What was built, in what order, and what is next |
 | [`docs/REQUIREMENTS_CHECKLIST.md`](docs/REQUIREMENTS_CHECKLIST.md) | Requirement-by-requirement status |
+| [`docs/DEVELOPMENT_FINANCE.md`](docs/DEVELOPMENT_FINANCE.md) | Development Finance: routes, seed, coverage of every requirement, decisions |
 | [`docs/DESIGN_SYSTEM_GUIDE.md`](docs/DESIGN_SYSTEM_GUIDE.md) | **Portable design system** — tokens, components, rules and the full stylesheet. Self-contained; reusable in other projects. |
 | [`docs/DESIGN_FIDELITY.md`](docs/DESIGN_FIDELITY.md) | Design verification and every divergence, with arithmetic |
 | [`docs/TESTER_GUIDE.md`](docs/TESTER_GUIDE.md) | **Tester's guide** — plain-language explanation of every screen and term with sample-data examples, the seeded dataset, expected figures, rules to verify, and known gaps |

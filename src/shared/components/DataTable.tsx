@@ -1,10 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 
-export interface DataTableColumn<TRow> {
-  /** Header text. Also emitted as each cell's `data-l`, which drives the mobile card layout. */
-  readonly header: ReactNode;
-  /** Short label for the mobile `label: value` layout when the header is long or empty. */
-  readonly mobileLabel?: string;
+interface DataTableColumnBase<TRow> {
   readonly align?: 'left' | 'right';
   /**
    * Marks the row's primary column. On mobile it becomes the card's heading
@@ -13,6 +9,26 @@ export interface DataTableColumn<TRow> {
   readonly lead?: boolean;
   readonly render: (row: TRow) => ReactNode;
 }
+
+/**
+ * A column either has a text header, which doubles as the mobile label, or a
+ * non-text header (an icon, or nothing at all for an actions column) and then
+ * *must* say in words what it holds — otherwise the ≤840px card layout prints
+ * an unlabelled value. The type makes the second case a compile error.
+ */
+export type DataTableColumn<TRow> = DataTableColumnBase<TRow> &
+  (
+    | {
+        /** Header text. Also emitted as each cell's `data-l`, which drives the mobile card layout. */
+        readonly header: string;
+        /** Short label for the mobile `label: value` layout when the header is long (or empty). */
+        readonly mobileLabel?: string;
+      }
+    | {
+        readonly header: Exclude<ReactNode, string>;
+        readonly mobileLabel: string;
+      }
+  );
 
 export interface DataTableProps<TRow> {
   readonly columns: readonly DataTableColumn<TRow>[];
@@ -87,7 +103,9 @@ export function DataTable<TRow>({
               aria-selected={isRowSelected ? isRowSelected(row) : undefined}
             >
               {columns.map((column, index) => {
-                const label = column.mobileLabel ?? (typeof column.header === 'string' ? column.header : undefined);
+                // An empty header is no label at all; fall through to `mobileLabel` or nothing.
+                const label =
+                  column.mobileLabel ?? (typeof column.header === 'string' && column.header !== '' ? column.header : undefined);
                 const className = [column.lead ? 'lead' : '', column.align === 'right' ? 'r' : '']
                   .filter(Boolean)
                   .join(' ');

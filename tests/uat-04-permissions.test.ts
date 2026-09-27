@@ -167,9 +167,11 @@ describe('NFR-01 / UAT-04 · permission enforcement', () => {
       'export.create',
     ] as const;
 
-    // A family contributor holds exactly one capability; everything else denies.
+    // A family contributor holds exactly two capabilities; everything else denies.
+    // `development.read` is a door, not a grant: a development project still
+    // shows nothing without a membership on that project (tests/df-projects).
     const granted = everyCapability.filter((capability) => contributor.capabilities.includes(capability));
     expect(granted).toEqual([]);
-    expect(contributor.capabilities).toEqual(['obligation.read']);
+    expect(contributor.capabilities).toEqual(['obligation.read', 'development.read']);
   });
 });

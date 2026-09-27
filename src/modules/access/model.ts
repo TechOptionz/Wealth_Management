@@ -29,7 +29,7 @@ export const ROLE_SUMMARIES: Record<AccessRole, string> = {
   'portfolio-owner': 'Everything, including whole-portfolio totals and granting access.',
   'operations-delegate':
     'Bills, rent tasks, expenses and documents on the chosen properties. No portfolio totals, no granting access.',
-  'family-contributor': 'Assigned tasks only. No properties, totals, exports or granting access.',
+  'family-contributor': 'Assigned tasks only, plus any development project they are a member of. No properties, totals, exports or granting access.',
   'accountant-readonly': 'Read-only records and exports until the expiry date. No edits, no granting access.',
   'technical-operator': 'Audit log only. No business data.',
 };

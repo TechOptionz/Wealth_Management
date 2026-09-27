@@ -38,21 +38,13 @@ export function NotificationsDrawer({ id, isOpen, items, readIds, onMarkAllRead,
   return (
     <div
       id={id}
-      className="card"
+      // `.card` is the surface, radius and shadow; `.pop` (src/styles/mobile.css)
+      // anchors it under the bell and, below 840px, pins it to the viewport so
+      // it never clips off a narrow screen.
+      className="card pop"
       role="region"
       aria-label="Notifications"
       hidden={!isOpen}
-      // Positioning only — the surface, radius and shadow come from `.card`.
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 8px)',
-        right: 0,
-        width: 'min(380px, 92vw)',
-        maxHeight: '70vh',
-        overflowY: 'auto',
-        zIndex: 30,
-        color: 'var(--text)',
-      }}
     >
       <div className="card-h">
         <h3>Notifications</h3>

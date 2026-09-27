@@ -1,5 +1,6 @@
 'use client';
 
+import { useScrollToSelectedRow } from '@/shared/components/useScrollToSelectedRow';
 import { useState } from 'react';
 import { ActionForm, firstError } from '@/shared/components/ActionForm';
 import { Button } from '@/shared/components/Button';
@@ -33,6 +34,8 @@ export interface LoansScreenProps {
   readonly properties: readonly { readonly id: string; readonly name: string }[];
   readonly entities: readonly { readonly id: string; readonly name: string }[];
   readonly today: string;
+  /** A facility to highlight on arrival, e.g. from a global search result. */
+  readonly focusLoanId?: string;
 }
 
 /** Renders an LVR cell, or the reason it cannot be produced (BR-04). */
@@ -106,8 +109,10 @@ export function LoansScreen({
   properties,
   entities,
   today,
+  focusLoanId,
 }: LoansScreenProps) {
   const [isCreating, setCreating] = useState(false);
+  useScrollToSelectedRow(focusLoanId);
 
   return (
     <Stack>
@@ -239,7 +244,14 @@ export function LoansScreen({
 
       <Card>
         <CardHeader title="Facilities" aside={<Sub>Balances as of last statement date</Sub>} />
-        <DataTable columns={columns} rows={rows} rowKey={(row) => row.loan.id} empty="No facilities recorded." />
+        <DataTable
+          columns={columns}
+          rows={rows}
+          rowKey={(row) => row.loan.id}
+          isRowSelected={(row) => row.loan.id === focusLoanId}
+          rowStyle={(row) => (row.loan.id === focusLoanId ? { background: 'var(--gold-soft)' } : undefined)}
+          empty="No facilities recorded."
+        />
       </Card>
 
       <Sub style={{ fontSize: 12 }}>

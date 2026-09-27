@@ -35,7 +35,15 @@ renders them and `shared/` may not import a module.
 `{ data: { query, groups: [{ category, label, results, total }] } }`.
 UI: `src/shared/shell/GlobalSearch.tsx` (ARIA combobox, 200 ms debounce).
 
-**Not done** — results link to the list screen for tenants, obligations, loans
-and documents (those screens have no per-record URL); no highlighting of the
-matched text; no fuzzy matching; entities and expenses are not searched; the
-search box is hidden on mobile by the design's CSS.
+**Where a result lands** — a property opens `/properties/[id]`. Tenants,
+obligations, loans and documents have no page of their own, so the link names
+the record on its list screen: `/leases?lease=…`, `/obligations?obligation=…`,
+`/loans?loan=…`, `/documents?document=…`. Each page reads the parameter and the
+screen opens on it — the right filter, the row selected and highlighted, and
+scrolled into view (`useScrollToSelectedRow`). A lease opens with its "Record
+payment" panel, never "End lease". An unknown id is ignored and the screen opens
+as normal. The page keys the screen by the id so a second search on the same
+screen re-selects.
+
+**Not done** — no highlighting of the matched text; no fuzzy matching; entities,
+expenses and development projects are not searched.

@@ -1,0 +1,58 @@
+/* Additions beyond the design prototype: responsive polish for phones and small
+   tablets (≤840px). The prototype's own ≤840px rules live, verbatim, in
+   responsive.css and nothing here rewrites them. Every rule composes the
+   prototype's tokens and class names, and the file sits outside the five
+   verbatim files so the byte-identical check in docs/DESIGN_FIDELITY.md still
+   holds. Each block says why it exists. */
+
+/* ---------- Top-bar popovers ---------- */
+/* The notifications panel, the account menu and the search results are `.card`s
+   anchored under their button. Below 840px they pin to the viewport instead, so
+   a 360px phone never clips them off the right-hand edge, and they stop short of
+   the tab bar. */
+.pop{position:absolute;top:calc(100% + 8px);right:0;z-index:30;color:var(--text);width:min(380px,calc(100vw - 24px));max-height:70vh;overflow-y:auto}
+.pop.account{width:min(320px,calc(100vw - 24px))}
+.pop.results{width:min(420px,90vw)}
+
+/* ---------- Mobile search ---------- */
+/* The prototype hides `.search` below 840px and offers nothing in its place.
+   The toggle appears only there, and opens a sheet that replaces the top bar
+   while search is in use. Both are display:none on wider screens so a viewport
+   that grows mid-search never shows them on the desktop layout. */
+.search-toggle,.search-sheet{display:none}
+
+/* ---------- Tab strips ---------- */
+/* `.tabs` scrolls horizontally; a fade on the overflowing edge tells the reader
+   there is more. `Tabs` sets data-scroll from the strip's real scroll position,
+   so a strip that fits shows no fade at all. */
+.tabs[data-scroll="start"]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+.tabs[data-scroll="middle"]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
+.tabs[data-scroll="end"]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 32px);mask-image:linear-gradient(90deg,transparent,#000 32px)}
+
+@media (max-width:840px){
+  /* With search and the as-of pill gone, the title takes the slack and truncates
+     rather than wrapping, so the buttons on its right keep their place. */
+  .topbar .page-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .search-toggle{display:grid}
+  .search-sheet{display:flex;align-items:center;gap:8px;position:fixed;left:0;right:0;top:0;height:var(--topbar);padding:0 14px;background:var(--surface);border-bottom:1px solid var(--line);z-index:40}
+  .search-sheet .search{display:flex;flex:1;width:auto;margin:0}
+  /* Reuses the drawer scrim's look; raised above the sidebar and tab bar (30). */
+  .search-scrim{z-index:35}
+
+  /* Listed with the variants so their wider-screen widths do not win on specificity. */
+  .pop,.pop.account,.pop.results{position:fixed;left:12px;right:12px;top:calc(var(--topbar) + 6px);width:auto;max-height:calc(100vh - var(--topbar) - var(--tabbar) - 24px)}
+
+  /* Touch targets: 36px for anything tapped inside a table card, a filter row or
+     a toolbar. Stacked cells wrap so a label and a pair of buttons never overflow. */
+  table.stack-m td{flex-wrap:wrap}
+  table.stack-m td .btn.sm,.toolbar .btn.sm{height:36px}
+  .filter{min-height:36px}
+
+  /* Toolbars: the filter row wraps above; the actions share one full-width row. */
+  .toolbar{gap:10px}
+  .toolbar>.btn,.toolbar>form>.btn,.toolbar>.row{width:100%}
+  .toolbar>.btn,.toolbar>form>.btn{justify-content:center}
+  .toolbar>.row{gap:8px}
+  .toolbar>.row .btn{flex:1 1 auto;justify-content:center}
+}

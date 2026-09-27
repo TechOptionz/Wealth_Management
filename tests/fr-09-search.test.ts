@@ -41,12 +41,12 @@ describe('FR-09 global search · matching', () => {
     ]);
   });
 
-  it('finds a tenant by name and links to the leases screen', () => {
+  it('finds a tenant by name and links to their lease on the leases screen', () => {
     const match = group(searchService.search('nguyen', asOf), 'tenants')?.results[0];
 
     expect(match?.title).toBe('A. Nguyen');
     expect(match?.subtitle).toContain('166C-R3');
-    expect(match?.href).toBe('/leases');
+    expect(match?.href).toBe(`/leases?lease=${match?.id}`);
   });
 
   it('finds a tenant by the billing reference on their lease', () => {
@@ -60,7 +60,7 @@ describe('FR-09 global search · matching', () => {
   it('finds obligations by title and by context', () => {
     const byTitle = group(searchService.search('insurance', asOf), 'obligations');
     expect(byTitle?.results.every((result) => result.title === 'Landlord insurance renewal')).toBe(true);
-    expect(byTitle?.results[0]?.href).toBe('/obligations');
+    expect(byTitle?.results[0]?.href).toBe(`/obligations?obligation=${byTitle?.results[0]?.id}`);
 
     const byContext = group(searchService.search('terri scheer', asOf), 'obligations');
     expect(byContext?.results.map((result) => result.title)).toEqual(['Landlord insurance renewal']);
@@ -70,7 +70,7 @@ describe('FR-09 global search · matching', () => {
   it('finds loans by lender and by facility name', () => {
     const byLender = group(searchService.search('macquarie', asOf), 'loans');
     expect(byLender?.results.map((result) => result.title)).toEqual(['Macquarie · Home loan 4417']);
-    expect(byLender?.results[0]?.href).toBe('/loans');
+    expect(byLender?.results[0]?.href).toBe(`/loans?loan=${byLender?.results[0]?.id}`);
 
     expect(titles(searchService.search('8820', asOf), 'loans')).toEqual(['CBA · Investment loan 8820']);
   });
@@ -79,7 +79,7 @@ describe('FR-09 global search · matching', () => {
     const match = group(searchService.search('terri scheer landlord', asOf), 'documents')?.results[0];
 
     expect(match?.title).toBe('Terri Scheer landlord policy 2026-27.pdf');
-    expect(match?.href).toBe('/documents');
+    expect(match?.href).toBe(`/documents?document=${match?.id}`);
   });
 
   it('ignores case and surrounding whitespace, and needs every word to match', () => {
@@ -119,6 +119,27 @@ describe('FR-09 global search · shape', () => {
     expect(searchService.search('   ', asOf).groups).toEqual([]);
     expect(searchService.search('a', asOf).groups).toEqual([]);
     expect(searchService.search('no-such-record-xyz', asOf).groups).toEqual([]);
+  });
+
+  it('links every result to its own record, never to a bare list screen', () => {
+    const PARAM: Record<SearchCategory, string | null> = {
+      properties: null,
+      tenants: 'lease',
+      obligations: 'obligation',
+      loans: 'loan',
+      documents: 'document',
+    };
+    const results = ['compton', 'cba', 'nguyen', 'rates'].flatMap(
+      (query) => searchService.search(query, asOf).groups.flatMap((entry) => entry.results),
+    );
+
+    expect(new Set(results.map((result) => result.category)).size).toBe(5);
+    results.forEach((result) => {
+      const param = PARAM[result.category];
+      const url = new URL(result.href, 'http://localhost');
+      if (param === null) expect(url.pathname).toBe(`/properties/${result.id}`);
+      else expect(url.searchParams.get(param)).toBe(result.id);
+    });
   });
 
   it('serves the same results through the module API for the current user', () => {

@@ -478,6 +478,17 @@ Only genuine, actionable gaps. Each item links to where it can be resolved and
 disappears once it is. An attention strip that never empties trains people to
 ignore it.
 
+### Financial grid (Development Finance)
+
+`FinanceGrid` renders `table.fin-grid` inside `.fin-wrap`: a frozen item
+column, up to two frozen summary columns and scrolling month columns. Rows take
+a kind (`group`, `parent`, `posting`, `total`, `closing`) that sets weight and
+tint, and parents print "· summary" so hierarchy is never weight alone. Month
+columns before the actuals cutoff carry `.actual` and the header word
+"actual". Money cells are right-aligned tabular figures; a cell with an `href`
+is a drill-through link. Pair it with `FinanceLegend`. Styling lives in
+`src/styles/finance.css` (see `DESIGN_FIDELITY.md` §3.12).
+
 ### Others
 
 | Class | Purpose |
@@ -537,7 +548,8 @@ Four, each with a single job.
 
 - Sidebar becomes a drawer (`min(300px, 86vw)`) over a scrim
 - Bottom tab bar appears — 5 destinations, `env(safe-area-inset-bottom)`
-- Top bar loses search and the as-of pill; menu button appears
+- Top bar loses search and the as-of pill; menu button appears. The app adds a
+  search icon that opens a full-width search sheet (`src/styles/mobile.css`)
 - All grids collapse to one column; hero KPI spans full width
 - **Tables become cards** via `.stack-m` + `data-l`
 - Content padding drops to 14px, with bottom clearance for the tab bar

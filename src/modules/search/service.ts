@@ -76,6 +76,15 @@ function rank(candidate: Candidate, query: string, words: readonly string[]): nu
   return words.every((word) => everything.includes(word)) ? 2 : null;
 }
 
+/**
+ * Link to a list screen with one record picked out. Tenants, obligations, loans
+ * and documents have no page of their own, so the list screen reads this
+ * parameter and selects, highlights and scrolls to the record.
+ */
+function recordHref(path: string, param: string, id: string): string {
+  return `${path}?${param}=${encodeURIComponent(id)}`;
+}
+
 function reachesAll(scope: AccessScope, propertyIds: readonly PropertyId[]): boolean {
   return propertyIds.every((propertyId) => canReachProperty(scope, propertyId));
 }
@@ -108,7 +117,7 @@ const CANDIDATE_SOURCES: Record<SearchCategory, (asOf: IsoDate, scope: AccessSco
           category: 'tenants',
           title: view.tenantName,
           subtitle: `${view.propertyLabel} · ${view.lease.reference}${view.status === 'ended' ? ' · ended' : ''}`,
-          href: '/leases',
+          href: recordHref('/leases', 'lease', view.lease.id),
         },
         primary: view.tenantName,
         secondary: [view.lease.reference],
@@ -125,7 +134,7 @@ const CANDIDATE_SOURCES: Record<SearchCategory, (asOf: IsoDate, scope: AccessSco
           category: 'obligations',
           title: view.obligation.title,
           subtitle: `${view.obligation.contextLabel} · ${view.statusLabel}`,
-          href: '/obligations',
+          href: recordHref('/obligations', 'obligation', view.obligation.id),
         },
         primary: view.obligation.title,
         secondary: [view.obligation.contextLabel],
@@ -141,7 +150,7 @@ const CANDIDATE_SOURCES: Record<SearchCategory, (asOf: IsoDate, scope: AccessSco
           category: 'loans',
           title: loan.lender === loan.facilityName ? loan.lender : `${loan.lender} · ${loan.facilityName}`,
           subtitle: loan.security.label,
-          href: '/loans',
+          href: recordHref('/loans', 'loan', loan.id),
         },
         primary: loan.lender,
         secondary: [loan.facilityName],
@@ -163,7 +172,7 @@ const CANDIDATE_SOURCES: Record<SearchCategory, (asOf: IsoDate, scope: AccessSco
           category: 'documents',
           title: view.record.filename,
           subtitle: [view.typeLabel, view.linkLabel ?? 'Unlinked'].join(' · '),
-          href: '/documents',
+          href: recordHref('/documents', 'document', view.record.id),
         },
         primary: view.record.filename,
         secondary: [],

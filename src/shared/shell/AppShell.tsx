@@ -23,6 +23,7 @@ export function AppShell({
   badges,
   scopeLabel,
   scopeOptions,
+  projects,
   currentUserName,
   currentUserRole,
   asOfDate,
@@ -41,6 +42,7 @@ export function AppShell({
             badges={badges}
             scopeLabel={scopeLabel}
             scopeOptions={scopeOptions}
+            projects={projects}
             currentUserName={currentUserName}
             currentUserRole={currentUserRole}
           />

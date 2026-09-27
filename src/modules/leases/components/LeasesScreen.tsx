@@ -20,6 +20,7 @@ import { FREQUENCY_SUFFIX, type LeaseLedger, type LeaseStatus } from '../model';
 import type { LeaseFilter, LeaseView } from '../service';
 import { NewLeaseForm, type NewLeaseFormProps } from './NewLeaseForm';
 import { TenantStatementModal } from './TenantStatementModal';
+import { useScrollToSelectedRow } from '@/shared/components/useScrollToSelectedRow';
 
 const STATUS_CHIP: Record<LeaseStatus, { tone: Tone; icon: IconName; label: (days: number) => string }> = {
   active: { tone: 'good', icon: 'i-check', label: () => 'Active' },
@@ -86,6 +87,8 @@ export interface LeasesScreenProps {
   readonly outstandingByLease: Readonly<Record<string, Money>>;
   /** Running statement per lease id, as at `today` — what "View statement" opens. */
   readonly ledgerByLease: Readonly<Record<string, LeaseLedger>>;
+  /** A lease to open on arrival, e.g. from a global search result. Unknown ids are ignored. */
+  readonly focusLeaseId?: string;
 }
 
 /** Which lifecycle panel is open for the selected lease. */
@@ -107,9 +110,18 @@ export function LeasesScreen({
   today,
   outstandingByLease,
   ledgerByLease,
+  focusLeaseId,
 }: LeasesScreenProps) {
-  const [filter, setFilter] = useState<LeaseFilter>('active');
-  const [panel, setPanel] = useState<LeasePanel>(null);
+  // Open on the filter that holds the searched-for lease, with its panel showing.
+  const focusFilter = focusLeaseId
+    ? FILTER_OPTIONS.find((option) => viewsByFilter[option.value].some((view) => view.lease.id === focusLeaseId))?.value
+    : undefined;
+  const focusView = focusFilter
+    ? viewsByFilter[focusFilter].find((view) => view.lease.id === focusLeaseId)
+    : undefined;
+  const [filter, setFilter] = useState<LeaseFilter>(focusFilter ?? 'active');
+  const [panel, setPanel] = useState<LeasePanel>(focusView ? { kind: 'payment', view: focusView } : null);
+  useScrollToSelectedRow(focusView?.lease.id);
   const [isCreating, setCreating] = useState(false);
   const [viewingStatement, setViewingStatement] = useState<LeaseId | null>(null);
   const close = (): void => setPanel(null);
