@@ -15,7 +15,7 @@ export default function DesignSystemPage() {
           title="Palette"
           aside={
             <Sub>
-              Charcoal from howtobecomeasuccessfulcoach.com (theme colour #1c2128) with a warm gold accent; status
+              After analytica.live: near-black #08090a canvas, charcoal cards with hairline borders, orange #f77d00 accent; status
               colours always paired with an icon and label
             </Sub>
           }
@@ -26,7 +26,7 @@ export default function DesignSystemPage() {
               <i
                 style={{
                   background: swatch.hex,
-                  ...(swatch.needsBorder ? { borderBottom: '1px solid #e3e6eb' } : {}),
+                  ...(swatch.needsBorder ? { borderBottom: '1px solid var(--line)' } : {}),
                 }}
               />
               <div>

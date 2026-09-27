@@ -20,6 +20,7 @@ import { leasesService } from '@/modules/leases/service';
 import { obligationsService } from '@/modules/obligations/service';
 import { reconciliationService, cashFlowService } from '@/modules/reconciliation/service';
 import { dashboardRepository } from './repository';
+import { scenarioInputs } from './scenarios';
 import { expensesService } from '@/modules/expenses/service';
 import { leasesRepository } from '@/modules/leases/repository';
 import type {
@@ -443,6 +444,7 @@ export const dashboardService = {
       cashFlow: dashboardService.cashFlow(asOf),
       cashFlowNote: dashboardService.cashFlowNote(asOf),
       monthlyCash: dashboardService.monthlyCashSummary(asOf),
+      scenario: scenarioInputs(asOf),
       arrears,
       arrearsPositions: leasesService.listArrears(asOf),
       upcoming: obligationsService.upcoming(asOf, UPCOMING_WINDOW_DAYS),

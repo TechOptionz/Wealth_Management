@@ -158,3 +158,58 @@ export interface ArrearsPosition {
 }
 
 export type ArrearsState = 'clear' | 'paid-ahead' | 'partial' | 'overdue' | 'disputed';
+
+/** What a statement line is: a charge that fell due, or an allocation applied. */
+export type LedgerEntryType = 'charge' | AllocationKind;
+
+export const LEDGER_ENTRY_LABELS: Record<LedgerEntryType, string> = {
+  charge: 'Charge',
+  receipt: 'Payment',
+  credit: 'Credit',
+  reversal: 'Reversal',
+};
+
+/**
+ * One line of a tenant's statement of account (FR-05, BR-05).
+ *
+ * The statement follows bookkeeping convention: a **debit** increases what the
+ * tenant owes (a charge falling due, a dishonoured payment being reversed) and
+ * a **credit** reduces it (money received, an approved credit). `amount` is the
+ * unsigned magnitude; `side` says which column it lands in.
+ */
+export interface LeaseLedgerEntry {
+  readonly id: string;
+  readonly date: IsoDate;
+  readonly description: string;
+  readonly type: LedgerEntryType;
+  readonly side: 'debit' | 'credit';
+  /** Always positive — `side` carries the direction. */
+  readonly amount: Money;
+  /** Balance after this line. Positive = owing, negative = tenant in credit. */
+  readonly balance: Money;
+}
+
+/**
+ * A lease's running statement as at a date. Every figure is derived on read
+ * from the charges and allocations, so `currentBalance` can always be traced
+ * line by line: it equals `totalCharged − totalReceived` and the last entry's
+ * `balance`.
+ */
+export interface LeaseLedger {
+  readonly leaseId: LeaseId;
+  readonly reference: string;
+  readonly tenantName: string;
+  readonly propertyLabel: string;
+  readonly leasePeriod: { readonly startsOn: IsoDate; readonly endsOn: IsoDate };
+  readonly asOf: IsoDate;
+  /** Sum of every charge that had fallen due by `asOf` — rent and recoveries. */
+  readonly totalCharged: Money;
+  /**
+   * Net amount applied against those charges by `asOf`: receipts plus approved
+   * credits, less reversals. A dishonoured payment therefore nets to nothing.
+   */
+  readonly totalReceived: Money;
+  /** Positive = owing, negative = paid ahead. */
+  readonly currentBalance: Money;
+  readonly entries: readonly LeaseLedgerEntry[];
+}

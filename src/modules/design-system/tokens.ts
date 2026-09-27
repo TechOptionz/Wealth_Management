@@ -2,8 +2,10 @@
  * Design-system reference data.
  *
  * The single place where the palette, type scale and UI rules are described for
- * humans. Values mirror `src/styles/tokens.css`; that file remains the source of
- * truth for what the app actually renders.
+ * humans. Values mirror the dark set in `src/styles/tokens.css` — the set the app
+ * renders, since it pins `data-theme="dark"` — and that file remains the source
+ * of truth. The palette follows analytica.live: near-black canvas, charcoal cards
+ * with hairline borders, off-white text and one orange accent.
  */
 
 export interface Swatch {
@@ -15,16 +17,17 @@ export interface Swatch {
 }
 
 export const PALETTE: readonly Swatch[] = [
-  { name: 'Charcoal', hex: '#1c2128', usage: 'nav, primary buttons, hero KPI' },
-  { name: 'Charcoal 3', hex: '#313a45', usage: 'active nav, hover' },
-  { name: 'Gold', hex: '#c9a55c', usage: 'accent, current indicators' },
-  { name: 'Gold deep', hex: '#a5843a', usage: 'gold text on light' },
-  { name: 'Canvas', hex: '#f3f4f6', usage: 'app background', needsBorder: true },
-  { name: 'Surface', hex: '#ffffff', usage: 'cards, tables', needsBorder: true },
-  { name: 'Good', hex: '#1f7a4d', usage: 'paid, current, matched' },
-  { name: 'Warn', hex: '#9a5b00', usage: 'stale, partial, unassigned' },
-  { name: 'Bad', hex: '#b42318', usage: 'overdue, failed' },
-  { name: 'Info', hex: '#2c5e9e', usage: 'disputed, queued, links' },
+  { name: 'Canvas', hex: '#08090a', usage: 'page and sidebar', needsBorder: true },
+  { name: 'Surface', hex: '#191b1d', usage: 'cards, tables', needsBorder: true },
+  { name: 'Surface 2', hex: '#212326', usage: 'hover, inset fields', needsBorder: true },
+  { name: 'Orange', hex: '#f77d00', usage: 'accent, current indicators' },
+  { name: 'Orange light', hex: '#ff965f', usage: 'accent text on cards' },
+  { name: 'Text', hex: '#f7f8f8', usage: 'body, filled buttons' },
+  { name: 'Muted', hex: '#9ca3af', usage: 'labels, captions' },
+  { name: 'Good', hex: '#4caf50', usage: 'paid, current, matched' },
+  { name: 'Warn', hex: '#ffbb25', usage: 'stale, partial, unassigned' },
+  { name: 'Bad', hex: '#f2625d', usage: 'overdue, failed' },
+  { name: 'Info', hex: '#6ea8ff', usage: 'disputed, queued, links' },
 ];
 
 /** The rules the interface follows, stated so they survive a hand-off. */
@@ -55,7 +58,7 @@ export const UI_RULES: readonly { readonly title: string; readonly body: string 
   },
   {
     title: 'One hero, everything else quiet.',
-    body: 'Only the primary KPI uses the charcoal fill; other tiles are white with a single accent so the eye lands in one place.',
+    body: 'Only the primary KPI gets the ink fill; every other tile is a quiet card with a single accent so the eye lands in one place.',
   },
 ];
 

@@ -1,0 +1,43 @@
+/* Additions beyond the design prototype: the modal dialog and its print layout.
+   The prototype has no dialog and no print rules, so these cannot be ported from
+   it. They live here, outside the five verbatim files, so the byte-identical
+   check in docs/DESIGN_FIDELITY.md still holds. Everything composes the
+   prototype's tokens; the only literal colours are paper white and ink black
+   for print, which must not follow the screen theme. */
+
+/* ---------- Modal ---------- */
+.modal{border:0;padding:0;margin:auto;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;color:var(--text)}
+.modal.wide{width:min(960px,calc(100vw - 32px))}
+.modal::backdrop{background:rgba(28,33,40,.5)}
+.modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--line-2)}
+.statement-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 18px}
+body:has(.modal[open]){overflow:hidden}
+@media (max-width:840px){
+  .modal,.modal.wide{width:calc(100vw - 16px);max-height:calc(100vh - 24px)}
+}
+
+/* ---------- Print: only the open dialog, on white ---------- */
+@media print{
+  @page{margin:16mm}
+  body:has(>.modal[open]){overflow:visible;background:#fff}
+  body:has(>.modal[open])>:not(.modal[open]){display:none !important}
+  .modal[open]{position:static;display:block;width:auto;max-width:none;max-height:none;overflow:visible;margin:0;box-shadow:none;border-radius:0;background:#fff;color:#000}
+  .modal[open] .sub,.modal[open] .kpi-label,.modal[open] .kpi-foot,.modal[open] .stat small,.modal[open] .stat .meta,.modal[open] th{color:#444}
+  .modal .no-print{display:none !important}
+  .modal .card{box-shadow:none;border:1px solid #bbb}
+  .modal .card-h{border-bottom-color:#bbb}
+  .modal .kpi,.modal .kpi.accent{background:none;color:#000;box-shadow:none;border:1px solid #bbb}
+  .modal .kpi.accent .kpi-value,.modal .kpi.accent .kpi-value small{color:#000}
+  .modal .chip{background:none;color:#000;border:1px solid #000}
+  /* A4 is narrower than the 840px breakpoint, so undo the mobile card layout. */
+  .modal .g3{grid-template-columns:repeat(3,1fr)}
+  .modal .tbl-wrap{overflow:visible}
+  .modal table.stack-m{display:table}
+  .modal table.stack-m thead{display:table-header-group}
+  .modal table.stack-m tbody{display:table-row-group}
+  .modal table.stack-m tr{display:table-row;padding:0;border:0;break-inside:avoid}
+  .modal table.stack-m td,.modal table.stack-m td.lead{display:table-cell;padding:7px 10px;border:0;border-bottom:1px solid #ddd;text-align:left}
+  .modal table.stack-m th{padding:7px 10px;border-bottom:1px solid #000}
+  .modal table.stack-m td.r,.modal table.stack-m th.r{text-align:right}
+  .modal table.stack-m td::before{content:none}
+}

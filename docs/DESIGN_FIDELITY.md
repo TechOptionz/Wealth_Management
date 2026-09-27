@@ -25,7 +25,9 @@ IDENTICAL (ignoring blank lines between sections): True
 Nothing was rewritten, renamed, or converted to a utility framework. Every class
 name, token, breakpoint and media query is the original.
 
-- Palette: all 33 CSS custom properties, light and dark, unchanged.
+- Palette: all 33 CSS custom properties, light and dark, identical to the design
+  file. Their values were re-pointed to the analytica.live palette on 2026-09-27
+  in both places at once — see §3.12.
 - Dark mode: both `prefers-color-scheme` and `[data-theme]` blocks preserved.
 - Breakpoints: 1320px, 1180px, 840px, plus `prefers-reduced-motion` — unchanged.
 - Radii, shadows, sidebar/topbar/tabbar dimensions — unchanged.
@@ -292,6 +294,91 @@ which appended an empty September bar — reading as a collapse in receipts rath
 than as an unreconciled period. It now anchors on the latest *posted* month, so
 it ends at August. This matches the prototype, which also shows Mar–Aug against a
 6 September as-of date. Caught by `tests/uat-05-dashboard-fixtures.test.ts`.
+
+## 3.11 One additive stylesheet: the modal dialog and print
+
+The tenant statement on `/leases` (FR-05) opens in a modal and must print. The
+prototype contains no dialog and no `@media print` rules, so there was nothing
+to port. Rather than edit the five verbatim files, the rules live in a sixth
+file, `src/styles/modal.css`, imported last from `globals.css`. The parity
+check in §5 reads only the original five, so it still reports 348/348.
+
+What it adds, and why each rule exists:
+
+| Rule | Reason |
+| --- | --- |
+| `.modal`, `.modal.wide`, `.modal::backdrop`, `.modal-foot` | A native `<dialog>` in the top layer. The panel itself is a `.card`; the backdrop reuses the `.scrim` colour |
+| `body:has(.modal[open]) { overflow: hidden }` | The page behind a modal should not scroll |
+| `.statement-meta` | Four `.stat` blocks in an auto-fit grid — no spacing values outside §5 of the guide |
+| `@media print` — `body:has(> .modal[open]) > :not(.modal[open]) { display: none }` | Print the open dialog and nothing else. The dialog is portalled to `<body>` so this one selector suffices |
+| Print flattening of `.kpi.accent` and `.chip` to black on white | Paper does not follow the screen theme, and the hero tile would otherwise print as a solid dark block |
+| Print undo of `table.stack-m` | A4 at 96 dpi is ~794px wide, narrower than the 840px breakpoint, so without this the ledger would print as mobile cards |
+
+The only literal colours in the file are paper white, ink black and two greys
+for print. Everything on screen uses the prototype's tokens.
+
+## 3.12 Palette re-pointed to analytica.live
+
+On 2026-09-27 the owner asked for the colour scheme of
+[analytica.live](https://analytica.live/). Its stylesheet was read directly rather
+than eyeballed: page `#08090a` (also its `theme-color`), card surface `#191b1d`,
+borders `rgba(255,255,255,.08)`, text `#f7f8f8` with `#9ca3af` for muted copy,
+and orange `#f77d00` on highlighted figures. Analytica ships dark only.
+
+Per the rule in `AGENTS.md`, the change was made in **both** the design file and
+`tokens.css` (and the §9 copy in `DESIGN_SYSTEM_GUIDE.md`) at the same time, and
+the parity check in §5 still reports 348/348. Token *names* are unchanged —
+`--gold` now holds orange — so no component CSS moved and the `.gold` class
+names still refer to the same variants.
+
+| Token | Was (light / dark) | Now (light / dark) |
+| --- | --- | --- |
+| `--ink`, `--side-bg`, `--solid`, `--hero` (light) | `#1c2128` | `#08090a` |
+| `--ink-2` / `--ink-3` / `--ink-line` | `#252c35` / `#313a45` / `#3d4652` | `#151616` / `#1e1f21` / `#2c2c2c` |
+| `--gold` | `#c9a55c` / `#d9b86c` | `#f77d00` / `#f77d00` |
+| `--gold-deep` | `#a5843a` / `#e2c47e` | `#b05000` / `#ff965f` |
+| `--gold-soft` · `--on-gold-soft` | `#f7efd9` · `#8a6a24` / `#332b18` · `#e6cb86` | `#fff1e6` · `#9a4700` / `#2b1806` · `#ffb27a` |
+| `--bg` | `#f3f4f6` / `#15191f` | `#f7f8f8` / `#08090a` |
+| `--surface` · `--surface-2` | `#ffffff` · `#f8f9fb` / `#1c2128` · `#20262e` | `#ffffff` · `#f2f3f4` / `#191b1d` · `#212326` |
+| `--line` · `--line-2` | `#e3e6eb` · `#eef0f3` / `#2c343e` · `#252c35` | `#e5e7eb` · `#eef0f2` / `rgba(255,255,255,.08)` · `rgba(255,255,255,.05)` |
+| `--text` · `--text-2` | `#1c2128` · `#4b5563` / `#e9ecf0` · `#c2c8d0` | `#08090a` · `#4a4a4a` / `#f7f8f8` · `#c9cdd3` |
+| `--muted` · `--faint` | `#6b7280` · `#9aa1ac` / `#98a1ad` · `#6f7883` | `#6b7280` · `#9ca3af` / `#9ca3af` · `#6b7280` |
+| `--good` | `#1f7a4d` / `#63d195` | `#2a7541` / `#4caf50` |
+| `--warn` | `#9a5b00` / `#f0b65a` | `#9a5b00` / `#ffbb25` |
+| `--bad` | `#b42318` / `#f5948b` | `#b33025` / `#f2625d` |
+| `--info` | `#2c5e9e` / `#8ab8f5` | `#2a63c4` / `#6ea8ff` |
+| status `-bg` (light) | `#e7f5ec` `#fff4dd` `#fdecea` `#e8f0fa` | `#e6f4ea` `#fff4dd` `#fdecea` `#e8f0fb` |
+| status `-bg` (dark) | `#153726` `#3a2a08` `#3d1a16` `#182c45` | `#0f2a19` `#2c2208` `#33130f` `#0f1f3a` |
+| `--hero` · `--hero-line` (dark) | `#0d1115` · `#2c343e` | `#000000` · `rgba(255,255,255,.12)` |
+| `--bar` (dark) | `#cfd5dc` | `#c9cdd3` |
+| `--on-ink` · `--on-ink-muted` | `#e9ecf0` · `#9ea6b1` | `#f7f8f8` · `#9ca3af` |
+| `--shadow` | charcoal-tinted | `rgba(8,9,10,…)` in light; a `rgba(255,255,255,.08)` ring in dark |
+
+Choices that are not a straight copy, and why:
+
+- **Dark is pinned.** Analytica has no light mode, so `<html data-theme="dark">`
+  in `src/app/layout.tsx` (with `colorScheme: 'dark'` and `themeColor: '#08090a'`)
+  and in the prototype makes the app open in that look on any OS. Deleting the
+  attribute restores follow-the-OS. The light set was still restyled so the two
+  never disagree about brand.
+- **Borders are translucent in dark.** Analytica draws every card with a
+  `rgba(255,255,255,.08)` hairline instead of a shadow. Keeping the alpha means
+  the same token reads correctly on the `#08090a` page, the `#191b1d` card and
+  the `#000` hero.
+- **`--bar` stays neutral.** The ownership chart uses `--bar`, `--gold`, `--info`
+  as three series; making series 1 orange would merge it with series 2.
+- **Accent text is darker than the accent.** `#f77d00` on white is 2.7:1, so
+  `--gold-deep` is `#b05000` (5.3:1 on white, 4.7:1 on `--surface-2`) wherever
+  orange is text on a light card. In dark it lightens to `#ff965f` (8.0:1), the
+  same relationship the old gold used.
+- **Status colours were checked against their own `-bg`**, not just the page.
+  Light: good 5.0:1, warn 5.0:1, bad 5.5:1, info 5.0:1. Dark: good 5.5:1,
+  warn 9.3:1, bad 5.4:1, info 6.8:1. Analytica's own red `#d73d3d` reached only
+  3.7:1 on a dark chip and was lifted to `#f2625d`.
+- **Font is unchanged.** Analytica uses Inter; the request was for colour, and
+  IBM Plex Sans is self-hosted and tuned for tabular figures.
+- **The design-system page** now shows the dark swatches, since that is what the
+  app renders, and its swatch hairline uses `var(--line)` instead of a literal.
 
 ## 4. Deliberate improvements
 

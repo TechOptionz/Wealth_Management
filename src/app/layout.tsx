@@ -23,13 +23,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // The prototype follows the OS theme by default; `data-theme` can pin it.
-  colorScheme: 'light dark',
+  // Pinned to dark after analytica.live, which ships dark only. To follow the OS
+  // theme again, set 'light dark' here and drop `data-theme` from <html> below.
+  colorScheme: 'dark',
+  themeColor: '#08090a',
 };
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
   return (
-    <html lang="en" className={ibmPlexSans.variable}>
+    <html lang="en" data-theme="dark" className={ibmPlexSans.variable}>
       <body>{children}</body>
     </html>
   );

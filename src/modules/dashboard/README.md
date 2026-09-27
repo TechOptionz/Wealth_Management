@@ -38,6 +38,18 @@ within 14 days, and one rolled-up reminder for unmatched bank rows. Derived on
 read and permission-filtered the same way search is. Wire types live in
 `shared/types/notifications.ts` because the shell may not import a module.
 
+**What-if scenarios (FR-11)** — `scenarios.ts` answers "what happens to monthly
+cash flow if rates rise or a property falls vacant?". `scenarioInputs(asOf)`
+gathers the baseline (the latest posted month, BR-03), the variable-rate
+liabilities and each rented property's live monthly rent; `applyScenario` in
+`scenario-math.ts` is the pure arithmetic and the only place it lives, so the
+`ScenarioDrawer` re-runs it in the browser on every click while the JSON route
+and the tests run the same function on the server. A rate shock touches variable
+liabilities only — a fixed rate is a contract until review, and a receivable is
+money owed *to* the portfolio. A vacancy removes the property's whole
+monthly-equivalent rent. Interest is one month of simple interest on the current
+balance; nothing is re-amortised and nothing is stored.
+
 **Not yet implemented** — scope switching by property/period, entity-scoped
 drill-down ("Explain this total" is withheld on scoped tiles), snapshot creation
 on period close.

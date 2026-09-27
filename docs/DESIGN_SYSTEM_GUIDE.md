@@ -3,8 +3,8 @@
 A portable design language for data-dense financial and operational interfaces:
 dashboards, registers, reconciliation screens, admin consoles.
 
-Charcoal and warm gold, IBM Plex Sans, tabular figures everywhere, and a strict
-rule that **status is never communicated by colour alone**.
+Near-black and orange after analytica.live, IBM Plex Sans, tabular figures
+everywhere, and a strict rule that **status is never communicated by colour alone**.
 
 Everything here is self-contained. Copy [§9 — the complete stylesheet](#9-the-complete-stylesheet)
 into your project, follow the principles, and you have the system.
@@ -95,48 +95,58 @@ Restricted users see a "limited view" variant, so a partial number never looks
 like a total.
 
 ### One hero, everything else quiet
-Exactly one KPI per screen gets the charcoal fill. Everything else is white with
-a single accent. Two heroes means no hero.
+Exactly one KPI per screen gets the ink fill. Everything else is a quiet card
+with a single accent. Two heroes means no hero.
 
 ---
 
 ## 3. Colour
 
-### Light (default)
+The palette follows [analytica.live](https://analytica.live/): a near-black
+canvas, charcoal cards defined by hairline borders rather than shadows, off-white
+text, and one orange accent reserved for the figures that matter. The app pins
+dark mode by default; the light set is the same palette in daylight, kept so the
+two never disagree about brand.
+
+### Light
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| `--ink` | `#1c2128` | Sidebar, headings, primary fill |
-| `--ink-2` | `#252c35` | Sidebar hover |
-| `--ink-3` | `#313a45` | Active nav |
-| `--ink-line` | `#3d4652` | Dividers on dark surfaces |
-| `--gold` | `#c9a55c` | Accent, current indicators, chart series 2 |
-| `--gold-deep` | `#a5843a` | Gold text on light backgrounds |
-| `--gold-soft` | `#f7efd9` | Selected-row wash, avatar background |
-| `--on-gold-soft` | `#8a6a24` | Text on `--gold-soft` |
-| `--bg` | `#f3f4f6` | App canvas |
+| `--ink` | `#08090a` | Sidebar, headings, primary fill |
+| `--ink-2` | `#151616` | Sidebar hover |
+| `--ink-3` | `#1e1f21` | Active nav |
+| `--ink-line` | `#2c2c2c` | Dividers on dark surfaces |
+| `--gold` | `#f77d00` | Accent, current indicators, chart series 2 |
+| `--gold-deep` | `#b05000` | Accent text on light backgrounds |
+| `--gold-soft` | `#fff1e6` | Selected-row wash, avatar background |
+| `--on-gold-soft` | `#9a4700` | Text on `--gold-soft` |
+| `--bg` | `#f7f8f8` | App canvas |
 | `--surface` | `#ffffff` | Cards, tables |
-| `--surface-2` | `#f8f9fb` | Hover, inset fields |
-| `--line` | `#e3e6eb` | Borders |
-| `--line-2` | `#eef0f3` | Internal dividers |
-| `--text` | `#1c2128` | Body |
-| `--text-2` | `#4b5563` | Secondary |
+| `--surface-2` | `#f2f3f4` | Hover, inset fields |
+| `--line` | `#e5e7eb` | Borders |
+| `--line-2` | `#eef0f2` | Internal dividers |
+| `--text` | `#08090a` | Body |
+| `--text-2` | `#4a4a4a` | Secondary |
 | `--muted` | `#6b7280` | Labels, captions |
-| `--faint` | `#9aa1ac` | Least emphasis, footnotes |
-| `--on-ink` | `#e9ecf0` | Text on charcoal |
-| `--on-ink-muted` | `#9ea6b1` | Secondary text on charcoal |
+| `--faint` | `#9ca3af` | Least emphasis, footnotes |
+| `--on-ink` | `#f7f8f8` | Text on ink |
+| `--on-ink-muted` | `#9ca3af` | Secondary text on ink |
+
+> The accent tokens keep their historical `gold` names — `--gold`, `.chip.gold`,
+> `.btn.gold` — even though the colour is now orange. Renaming would touch every
+> component file for no visual gain.
 
 ### Status
 
 Always used as a **pair** — the foreground for text and icon, the `-bg` for the
-chip fill.
+chip fill. Every pair below clears 4.5:1 against its own `-bg`.
 
 | Meaning | Token | Hex | `-bg` | Applies to |
 | --- | --- | --- | --- | --- |
-| Good | `--good` | `#1f7a4d` | `#e7f5ec` | Paid, current, matched, delivered |
+| Good | `--good` | `#2a7541` | `#e6f4ea` | Paid, current, matched, delivered |
 | Warning | `--warn` | `#9a5b00` | `#fff4dd` | Stale, partial, unassigned, blocked |
-| Bad | `--bad` | `#b42318` | `#fdecea` | Overdue, failed, reversed |
-| Info | `--info` | `#2c5e9e` | `#e8f0fa` | Disputed, queued, links |
+| Bad | `--bad` | `#b33025` | `#fdecea` | Overdue, failed, reversed |
+| Info | `--info` | `#2a63c4` | `#e8f0fb` | Disputed, queued, links |
 
 ### Role tokens
 
@@ -145,33 +155,36 @@ component.
 
 | Token | Light | Purpose |
 | --- | --- | --- |
-| `--solid` / `--on-solid` | `#1c2128` / `#ffffff` | Filled buttons, pressed filters |
-| `--hero` / `--on-hero` | `#1c2128` / `#e9ecf0` | The one accent KPI |
-| `--bar` | `#1c2128` | Chart series 1 |
-| `--side-bg` | `#1c2128` | Sidebar |
+| `--solid` / `--on-solid` | `#08090a` / `#ffffff` | Filled buttons, pressed filters |
+| `--hero` / `--on-hero` | `#08090a` / `#f7f8f8` | The one accent KPI |
+| `--bar` | `#08090a` | Chart series 1 |
+| `--side-bg` | `#08090a` | Sidebar |
 
-### Dark
+### Dark (the app's default)
 
 Dark mode is a **token swap only** — no component CSS changes. It responds to
 `prefers-color-scheme` and to an explicit `data-theme` attribute, so a user
-toggle wins in both directions.
+toggle wins in both directions. The app sets `data-theme="dark"` on `<html>` in
+`src/app/layout.tsx` because analytica.live ships dark only; remove that
+attribute (and set `colorScheme: 'light dark'`) to follow the OS again.
 
 | Token | Dark |
 | --- | --- |
-| `--bg` | `#15191f` |
-| `--surface` | `#1c2128` |
-| `--surface-2` | `#20262e` |
-| `--line` / `--line-2` | `#2c343e` / `#252c35` |
-| `--text` / `--text-2` | `#e9ecf0` / `#c2c8d0` |
-| `--muted` / `--faint` | `#98a1ad` / `#6f7883` |
-| `--good` / `--warn` / `--bad` / `--info` | `#63d195` / `#f0b65a` / `#f5948b` / `#8ab8f5` |
-| `--good-bg` / `--warn-bg` / `--bad-bg` / `--info-bg` | `#153726` / `#3a2a08` / `#3d1a16` / `#182c45` |
-| `--gold` / `--gold-deep` / `--gold-soft` | `#d9b86c` / `#e2c47e` / `#332b18` |
-| `--solid` / `--on-solid` | `#e9ecf0` / `#1c2128` — **inverts** |
-| `--hero` / `--bar` / `--side-bg` | `#0d1115` / `#cfd5dc` / `#12161b` |
+| `--bg` | `#08090a` |
+| `--surface` | `#191b1d` |
+| `--surface-2` | `#212326` |
+| `--line` / `--line-2` | `rgba(255,255,255,.08)` / `rgba(255,255,255,.05)` — translucent, so one hairline reads on page, card and hero alike |
+| `--text` / `--text-2` | `#f7f8f8` / `#c9cdd3` |
+| `--muted` / `--faint` | `#9ca3af` / `#6b7280` |
+| `--good` / `--warn` / `--bad` / `--info` | `#4caf50` / `#ffbb25` / `#f2625d` / `#6ea8ff` |
+| `--good-bg` / `--warn-bg` / `--bad-bg` / `--info-bg` | `#0f2a19` / `#2c2208` / `#33130f` / `#0f1f3a` |
+| `--gold` / `--gold-deep` / `--gold-soft` | `#f77d00` / `#ff965f` / `#2b1806` |
+| `--solid` / `--on-solid` | `#f7f8f8` / `#08090a` — **inverts** |
+| `--hero` / `--hero-line` | `#000000` / `rgba(255,255,255,.12)` — the hero is the darkest thing on screen, ringed rather than filled |
+| `--bar` / `--side-bg` | `#c9cdd3` / `#08090a` |
 
 > **Watch the inversion.** In dark mode `--solid` becomes light with dark text.
-> Any component hard-coding `#1c2128` instead of `var(--solid)` will invert
+> Any component hard-coding `#08090a` instead of `var(--solid)` will invert
 > incorrectly. This is the most common way the system gets broken.
 
 ### Rebranding
@@ -270,7 +283,7 @@ colour and borders, not by stacked shadows.
 ```
 
 The second layer is a hairline border drawn as a shadow, so cards read as edged
-rather than floating. Hover on an interactive card adds a gold ring:
+rather than floating. Hover on an interactive card adds an accent ring:
 `0 0 0 2px var(--gold), var(--shadow)`.
 
 ### Layout dimensions
@@ -316,7 +329,7 @@ sub-label, or a button row. Not several.
 
 | Variant | Effect |
 | --- | --- |
-| `.accent` | Charcoal hero fill. **One per screen.** |
+| `.accent` | Ink hero fill. **One per screen.** |
 | `.wide` | Spans two grid columns (full width ≤840px) |
 
 `.kpi-value small` is a trailing qualifier inside the number — an as-of date, an
@@ -480,6 +493,7 @@ ignore it.
 | `.toast` | Transient bottom-centre confirmation, 2200ms |
 | `.swatches` / `.sw` | Palette display |
 | `pre.wire` | ASCII layout diagram |
+| `.modal` / `.modal-foot` | Native `<dialog>` in the top layer, styled as a `.card`; `.no-print` marks controls the print layout drops. Not in the prototype — see `src/styles/modal.css` and `DESIGN_FIDELITY.md` §3.11. Use the `Modal` component |
 
 ### Icons
 
@@ -500,7 +514,7 @@ Icons inherit their parent's colour. Never hard-code a stroke colour on one.
 
 ```
 .app  (grid: 248px sidebar + 1fr)
-├── .sidebar    sticky, full height, charcoal
+├── .sidebar    sticky, full height, ink
 ├── .scrim      mobile only, behind the drawer
 ├── .main
 │   ├── .topbar   sticky, 60px
@@ -580,36 +594,36 @@ Split into five files in this order. Concatenated it is ~350 lines.
 Colour, type, spacing and layout tokens. **This is the only file you edit to rebrand.**
 
 ```css
-/* ---------- Tokens (palette from howtobecomeasuccessfulcoach.com: charcoal #1c2128 + warm gold accent) ---------- */
+/* ---------- Tokens (palette after analytica.live: near-black #08090a, charcoal surfaces, hairline borders, orange #f77d00 accent) ---------- */
 :root{
-  --ink:#1c2128;        /* site theme colour — sidebar, headings */
-  --ink-2:#252c35;
-  --ink-3:#313a45;
-  --ink-line:#3d4652;
-  --gold:#c9a55c;       /* warm accent */
-  --gold-deep:#a5843a;
-  --gold-soft:#f7efd9;
-  --bg:#f3f4f6;
+  --ink:#08090a;        /* site theme colour — sidebar, headings */
+  --ink-2:#151616;
+  --ink-3:#1e1f21;
+  --ink-line:#2c2c2c;
+  --gold:#f77d00;       /* accent — the orange analytica.live puts on highlighted figures */
+  --gold-deep:#b05000;
+  --gold-soft:#fff1e6;
+  --bg:#f7f8f8;
   --surface:#ffffff;
-  --surface-2:#f8f9fb;
-  --line:#e3e6eb;
-  --line-2:#eef0f3;
-  --text:#1c2128;
-  --text-2:#4b5563;
+  --surface-2:#f2f3f4;
+  --line:#e5e7eb;
+  --line-2:#eef0f2;
+  --text:#08090a;
+  --text-2:#4a4a4a;
   --muted:#6b7280;
-  --faint:#9aa1ac;
-  --good:#1f7a4d;   --good-bg:#e7f5ec;
+  --faint:#9ca3af;
+  --good:#2a7541;   --good-bg:#e6f4ea;
   --warn:#9a5b00;   --warn-bg:#fff4dd;
-  --bad:#b42318;    --bad-bg:#fdecea;
-  --info:#2c5e9e;   --info-bg:#e8f0fa;
-  --on-ink:#e9ecf0;
-  --on-ink-muted:#9ea6b1;
-  --solid:#1c2128; --on-solid:#ffffff;     /* filled buttons, pressed filters */
-  --hero:#1c2128; --on-hero:#e9ecf0; --hero-line:transparent;
-  --bar:#1c2128;                            /* chart bars */
-  --side-bg:#1c2128;
-  --on-gold-soft:#8a6a24;                   /* text on gold-soft (avatars, gold chips) */
-  --shadow:0 1px 2px rgba(28,33,40,.06), 0 0 0 1px rgba(28,33,40,.04);
+  --bad:#b33025;    --bad-bg:#fdecea;
+  --info:#2a63c4;   --info-bg:#e8f0fb;
+  --on-ink:#f7f8f8;
+  --on-ink-muted:#9ca3af;
+  --solid:#08090a; --on-solid:#ffffff;     /* filled buttons, pressed filters */
+  --hero:#08090a; --on-hero:#f7f8f8; --hero-line:transparent;
+  --bar:#08090a;                            /* chart bars */
+  --side-bg:#08090a;
+  --on-gold-soft:#9a4700;                   /* text on gold-soft (avatars, gold chips) */
+  --shadow:0 1px 2px rgba(8,9,10,.06), 0 0 0 1px rgba(8,9,10,.05);
   --r-sm:6px; --r-md:10px; --r-lg:14px;
   --sidebar:248px;
   --topbar:60px;
@@ -618,25 +632,25 @@ Colour, type, spacing and layout tokens. **This is the only file you edit to reb
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#15191f; --surface:#1c2128; --surface-2:#20262e; --line:#2c343e; --line-2:#252c35;
-    --text:#e9ecf0; --text-2:#c2c8d0; --muted:#98a1ad; --faint:#6f7883;
-    --good-bg:#153726; --warn-bg:#3a2a08; --bad-bg:#3d1a16; --info-bg:#182c45; --gold-soft:#332b18;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05);
-    --good:#63d195; --warn:#f0b65a; --bad:#f5948b; --info:#8ab8f5;
-    --gold:#d9b86c; --gold-deep:#e2c47e; --on-gold-soft:#e6cb86;
-    --solid:#e9ecf0; --on-solid:#1c2128; --hero:#0d1115; --on-hero:#f2f4f7; --hero-line:#2c343e; --bar:#cfd5dc; --side-bg:#12161b;
-    --on-ink:#e9ecf0; --on-ink-muted:#a3abb6;
+    --bg:#08090a; --surface:#191b1d; --surface-2:#212326; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+    --text:#f7f8f8; --text-2:#c9cdd3; --muted:#9ca3af; --faint:#6b7280;
+    --good-bg:#0f2a19; --warn-bg:#2c2208; --bad-bg:#33130f; --info-bg:#0f1f3a; --gold-soft:#2b1806;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
+    --good:#4caf50; --warn:#ffbb25; --bad:#f2625d; --info:#6ea8ff;
+    --gold:#f77d00; --gold-deep:#ff965f; --on-gold-soft:#ffb27a;
+    --solid:#f7f8f8; --on-solid:#08090a; --hero:#000000; --on-hero:#f7f8f8; --hero-line:rgba(255,255,255,.12); --bar:#c9cdd3; --side-bg:#08090a;
+    --on-ink:#f7f8f8; --on-ink-muted:#9ca3af;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#15191f; --surface:#1c2128; --surface-2:#20262e; --line:#2c343e; --line-2:#252c35;
-  --text:#e9ecf0; --text-2:#c2c8d0; --muted:#98a1ad; --faint:#6f7883;
-  --good-bg:#153726; --warn-bg:#3a2a08; --bad-bg:#3d1a16; --info-bg:#182c45; --gold-soft:#332b18;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05);
-    --good:#63d195; --warn:#f0b65a; --bad:#f5948b; --info:#8ab8f5;
-    --gold:#d9b86c; --gold-deep:#e2c47e; --on-gold-soft:#e6cb86;
-    --solid:#e9ecf0; --on-solid:#1c2128; --hero:#0d1115; --on-hero:#f2f4f7; --hero-line:#2c343e; --bar:#cfd5dc; --side-bg:#12161b;
-    --on-ink:#e9ecf0; --on-ink-muted:#a3abb6;
+  --bg:#08090a; --surface:#191b1d; --surface-2:#212326; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+  --text:#f7f8f8; --text-2:#c9cdd3; --muted:#9ca3af; --faint:#6b7280;
+  --good-bg:#0f2a19; --warn-bg:#2c2208; --bad-bg:#33130f; --info-bg:#0f1f3a; --gold-soft:#2b1806;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
+    --good:#4caf50; --warn:#ffbb25; --bad:#f2625d; --info:#6ea8ff;
+    --gold:#f77d00; --gold-deep:#ff965f; --on-gold-soft:#ffb27a;
+    --solid:#f7f8f8; --on-solid:#08090a; --hero:#000000; --on-hero:#f7f8f8; --hero-line:rgba(255,255,255,.12); --bar:#c9cdd3; --side-bg:#08090a;
+    --on-ink:#f7f8f8; --on-ink-muted:#9ca3af;
 }
 ```
 
@@ -1014,7 +1028,7 @@ Before you ship a screen built on this system:
 - [ ] Selection state is in ARIA, not only in a class
 - [ ] Interactive rows are keyboard-reachable with visible focus
 - [ ] Checked at 375px, 840px, 1180px and 1440px
-- [ ] Checked in dark mode — nothing hard-codes `#1c2128` instead of `var(--solid)`
+- [ ] Checked in dark mode — nothing hard-codes `#08090a` instead of `var(--solid)`
 - [ ] Checked in greyscale — every status still readable
 - [ ] No new CSS written for a component that already exists
 
@@ -1025,7 +1039,7 @@ Before you ship a screen built on this system:
 | A bare coloured dot for status | Fails colour-blindness and greyscale | `.chip` with icon and words |
 | `0%` for a missing ratio | Reads as measured-and-fine | "Unavailable" plus the reason |
 | Two accent KPIs | Nothing is the hero | One `.accent`, the rest quiet |
-| Hard-coded `#1c2128` | Inverts wrongly in dark mode | `var(--solid)` or `var(--ink)` |
+| Hard-coded `#08090a` | Inverts wrongly in dark mode | `var(--solid)` or `var(--ink)` |
 | A number without `.num` | Breaks decimal alignment in a column | Always `.num` |
 | A table cell without `data-l` | Mobile shows an unlabelled value | Always supply it |
 | Styling a one-off inline in a feature | The system fragments | Add it to the component layer once |
@@ -1039,7 +1053,8 @@ Before you ship a screen built on this system:
 
 Extracted from the Holdfast wealth & property platform, whose stylesheet was
 ported verbatim from an HTML design prototype and verified byte-identical
-(348/348 rule lines). The palette is charcoal `#1c2128` with a warm gold accent.
+(348/348 rule lines). The palette follows analytica.live: near-black `#08090a`,
+charcoal surfaces, hairline borders and an orange `#f77d00` accent.
 
 Free to reuse. Swap `:root` in `tokens.css` for your own brand and keep
 everything else.

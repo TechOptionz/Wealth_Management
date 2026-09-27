@@ -2,7 +2,9 @@
  * Transport-agnostic handlers for the dashboard module.
  */
 import { resolveAsOfDate } from '@/shared/config/app-config';
+import { asId } from '@/shared/types/common';
 import { dashboardService } from './service';
+import { scenarioInputs, simulateScenario } from './scenarios';
 import { accessService } from '@/modules/access/service';
 
 export const dashboardApi = {
@@ -40,5 +42,27 @@ export const dashboardApi = {
   scopeOptions() {
     accessService.guard('portfolio.totals.read');
     return dashboardService.scopeOptions();
+  },
+
+  /** Inputs for the what-if drawer (FR-11); the drawer runs the arithmetic itself. */
+  scenarioInputs(asOf?: string) {
+    accessService.guard('portfolio.totals.read');
+    return scenarioInputs(asOf ?? resolveAsOfDate());
+  },
+
+  /** A what-if scenario evaluated on the server (FR-11). Read-only. */
+  simulateScenario(input: {
+    readonly rateDeltaPercent: number;
+    readonly vacantPropertyIds?: readonly string[];
+    readonly asOf?: string;
+  }) {
+    // NFR-01: the scenario exposes debt balances and rents, so it needs the same
+    // capability as the totals it is derived from.
+    accessService.guard('portfolio.totals.read');
+    return simulateScenario({
+      rateDeltaPercent: input.rateDeltaPercent,
+      vacantPropertyIds: (input.vacantPropertyIds ?? []).map((id) => asId<'Property'>(id)),
+      asOf: input.asOf ?? resolveAsOfDate(),
+    });
   },
 };

@@ -15,6 +15,7 @@ import { CashFlowChart } from '@/modules/dashboard/components/CashFlowChart';
 import { UpcomingList } from '@/modules/dashboard/components/UpcomingList';
 import { ArrearsTable } from '@/modules/dashboard/components/ArrearsTable';
 import { OwnershipView } from '@/modules/dashboard/components/OwnershipView';
+import { ScenarioDrawer } from '@/modules/dashboard/components/ScenarioDrawer';
 
 export const metadata: Metadata = { title: 'Dashboard · Holdfast' };
 
@@ -70,15 +71,18 @@ function dashboardView(asOf: IsoDate, entityId: string | undefined) {
           <CardHeader
             title="Cash flow · last 6 months"
             aside={
-              <div className="legend">
-                <span>
-                  <i style={{ background: 'var(--bar)' }} />
-                  Receipts
-                </span>
-                <span>
-                  <i style={{ background: 'var(--gold)' }} />
-                  Outgoings
-                </span>
+              <div className="row">
+                <div className="legend">
+                  <span>
+                    <i style={{ background: 'var(--bar)' }} />
+                    Receipts
+                  </span>
+                  <span>
+                    <i style={{ background: 'var(--gold)' }} />
+                    Outgoings
+                  </span>
+                </div>
+                <ScenarioDrawer inputs={overview.scenario} />
               </div>
             }
           />

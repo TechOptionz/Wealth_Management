@@ -14,10 +14,11 @@ import { IDLE_RESULT, type ActionResult } from '@/shared/lib/action-result';
 import { CURRENT_USER_ID } from '@/modules/access/data/seed';
 import { leasesService } from '@/modules/leases/service';
 import { leasesRepository } from '@/modules/leases/repository';
-import { LEASE_IDS } from '@/modules/leases/data/seed';
+import { LEASE_IDS, TENANT_IDS } from '@/modules/leases/data/seed';
+import { COMPONENT_IDS, PROPERTY_IDS } from '@/modules/properties/data/seed';
 import { asId } from '@/shared/types/common';
-import { fromMajorUnits } from '@/shared/lib/money';
-import { ValidationError } from '@/shared/lib/errors';
+import { fromMajorUnits, money } from '@/shared/lib/money';
+import { NotFoundError, ValidationError } from '@/shared/lib/errors';
 
 const AS_OF = '2026-09-06';
 
@@ -219,5 +220,183 @@ describe('FR-05 · recording a rent payment', () => {
       formOf({ leaseId: LEASE_IDS.patelBenton, amount: '0', receivedOn: AS_OF }),
     );
     expect(result.ok).toBe(false);
+  });
+});
+
+describe('FR-05 · tenant statement (running ledger)', () => {
+  const LEDGER_LEASE = asId<'Lease'>('lease-test-ledger');
+
+  /**
+   * A hand-derived ledger whose cents do not round away. Expected lines as at 6 Sep:
+   *
+   *    1 Jul  Weekly rent               +412.50 →   412.50
+   *    1 Jul  Payment (same day)        −412.50 →     0.00
+   *    8 Jul  Weekly rent               +412.50 →   412.50
+   *    9 Jul  Payment · Cash            −200.00 →   212.50
+   *   10 Jul  Water recovery             +63.35 →   275.85
+   *   12 Jul  Reversal · Dishonoured    +200.00 →   475.85
+   *   15 Jul  Weekly rent               +412.50 →   888.35
+   *   16 Jul  Approved credit            −12.50 →   875.85
+   *   20 Jul  Payment (overpaid)      −1,000.01 →  −124.16   (tenant in credit)
+   *
+   * A charge due 10 Sep and a receipt on 7 Sep fall after the statement date.
+   */
+  function seedLedgerFixture(): void {
+    leasesRepository.insert({
+      id: LEDGER_LEASE,
+      tenantId: TENANT_IDS.chen,
+      propertyId: PROPERTY_IDS.comptonRd,
+      componentId: COMPONENT_IDS.comptonRoom2,
+      reference: 'TEST-LEDGER',
+      startsOn: '2026-07-01',
+      endsOn: '2027-06-30',
+      rent: money(41_250),
+      frequency: 'weekly',
+      chargeAnchorOn: '2026-07-01',
+      remindersEnabled: true,
+      disputed: false,
+    });
+
+    const c1 = asId<'RentCharge'>('chg-ledger-0701');
+    const c2 = asId<'RentCharge'>('chg-ledger-0708');
+    const c3 = asId<'RentCharge'>('chg-ledger-0715');
+    const c4 = asId<'RentCharge'>('chg-ledger-0910');
+    leasesRepository.insertCharge({ id: c1, leaseId: LEDGER_LEASE, dueOn: '2026-07-01', amount: money(41_250) });
+    leasesRepository.insertCharge({ id: c2, leaseId: LEDGER_LEASE, dueOn: '2026-07-08', amount: money(41_250) });
+    leasesRepository.insertCharge({ id: c3, leaseId: LEDGER_LEASE, dueOn: '2026-07-15', amount: money(41_250) });
+    // Inserted out of date order on purpose — the ledger must sort, not trust insertion.
+    leasesRepository.insertCharge({
+      id: asId<'RentCharge'>('chg-ledger-water'),
+      leaseId: LEDGER_LEASE,
+      dueOn: '2026-07-10',
+      amount: money(6_335),
+      kind: 'utility',
+      description: 'Water recovery · Urban Utilities',
+      sourceBillId: 'bill-test',
+    });
+    leasesRepository.insertCharge({ id: c4, leaseId: LEDGER_LEASE, dueOn: '2026-09-10', amount: money(41_250) });
+
+    leasesService.recordReceipt({ chargeId: c1, amount: money(41_250), receivedOn: '2026-07-01' });
+    const cash = leasesService.recordReceipt({
+      chargeId: c2,
+      amount: money(20_000),
+      receivedOn: '2026-07-09',
+      note: 'Cash',
+    });
+    leasesService.recordReversal({ allocationId: cash!.id, reversedOn: '2026-07-12', note: 'Dishonoured' });
+    leasesService.recordCredit({
+      chargeId: c3,
+      amount: money(1_250),
+      appliedOn: '2026-07-16',
+      approvedBy: CURRENT_USER_ID,
+      note: 'Goodwill for repair delay',
+    });
+    leasesService.recordReceipt({ chargeId: c3, amount: money(100_001), receivedOn: '2026-07-20' });
+    leasesService.recordReceipt({ chargeId: c4, amount: money(5_000), receivedOn: '2026-09-07' });
+  }
+
+  const shape = (ledger: ReturnType<typeof leasesService.leaseLedger>) =>
+    ledger.entries.map((entry) => [entry.date, entry.type, entry.side, entry.amount.cents, entry.balance.cents]);
+
+  it('builds chronological entries with a running balance exact to the cent', () => {
+    seedLedgerFixture();
+    const ledger = leasesService.leaseLedger(LEDGER_LEASE, AS_OF);
+
+    expect(shape(ledger)).toEqual([
+      ['2026-07-01', 'charge', 'debit', 41_250, 41_250],
+      ['2026-07-01', 'receipt', 'credit', 41_250, 0],
+      ['2026-07-08', 'charge', 'debit', 41_250, 41_250],
+      ['2026-07-09', 'receipt', 'credit', 20_000, 21_250],
+      ['2026-07-10', 'charge', 'debit', 6_335, 27_585],
+      ['2026-07-12', 'reversal', 'debit', 20_000, 47_585],
+      ['2026-07-15', 'charge', 'debit', 41_250, 88_835],
+      ['2026-07-16', 'credit', 'credit', 1_250, 87_585],
+      ['2026-07-20', 'receipt', 'credit', 100_001, -12_416],
+    ]);
+
+    expect(ledger.totalCharged.cents).toBe(130_085);
+    expect(ledger.totalReceived.cents).toBe(142_501);
+    expect(ledger.currentBalance.cents).toBe(-12_416);
+
+    // The statement reconciles three ways: last line, invoiced − paid, and the arrears figure.
+    expect(ledger.entries[ledger.entries.length - 1]?.balance.cents).toBe(ledger.currentBalance.cents);
+    expect(ledger.totalCharged.cents - ledger.totalReceived.cents).toBe(ledger.currentBalance.cents);
+    expect(leasesService.arrearsFor(LEDGER_LEASE, AS_OF).outstanding.cents).toBe(ledger.currentBalance.cents);
+
+    // Amounts are unsigned; the side carries the direction.
+    expect(ledger.entries.every((entry) => entry.amount.cents > 0)).toBe(true);
+  });
+
+  it('describes each line from what was recorded', () => {
+    seedLedgerFixture();
+    const descriptions = leasesService.leaseLedger(LEDGER_LEASE, AS_OF).entries.map((entry) => entry.description);
+
+    expect(descriptions[0]).toBe('Weekly rent');
+    expect(descriptions[1]).toBe('Payment received');
+    expect(descriptions[3]).toBe('Payment received · Cash');
+    expect(descriptions[4]).toBe('Water recovery · Urban Utilities');
+    expect(descriptions[5]).toBe('Payment reversed · Dishonoured');
+    expect(descriptions[7]).toBe('Approved credit · Goodwill for repair delay');
+  });
+
+  it('stops at the statement date — later charges and receipts are not on it', () => {
+    seedLedgerFixture();
+
+    const midJuly = leasesService.leaseLedger(LEDGER_LEASE, '2026-07-09');
+    expect(midJuly.entries.map((entry) => entry.date)).toEqual([
+      '2026-07-01',
+      '2026-07-01',
+      '2026-07-08',
+      '2026-07-09',
+    ]);
+    expect(midJuly.totalCharged.cents).toBe(82_500);
+    expect(midJuly.totalReceived.cents).toBe(61_250);
+    expect(midJuly.currentBalance.cents).toBe(21_250);
+
+    const beforeStart = leasesService.leaseLedger(LEDGER_LEASE, '2026-06-30');
+    expect(beforeStart.entries).toEqual([]);
+    expect(beforeStart.totalCharged.cents).toBe(0);
+    expect(beforeStart.totalReceived.cents).toBe(0);
+    expect(beforeStart.currentBalance.cents).toBe(0);
+  });
+
+  it('carries the header a printed statement needs', () => {
+    const ledger = leasesService.leaseLedger(LEASE_IDS.nguyenR3, AS_OF);
+
+    expect(ledger.leaseId).toBe(LEASE_IDS.nguyenR3);
+    expect(ledger.tenantName).toBe('A. Nguyen');
+    expect(ledger.reference).toBe('166C-R3');
+    expect(ledger.propertyLabel).toContain('Room 3');
+    expect(ledger.leasePeriod).toEqual({ startsOn: '2026-06-01', endsOn: '2027-05-31' });
+    expect(ledger.asOf).toBe(AS_OF);
+  });
+
+  it('reproduces the seeded arrears: Nguyen owes $200 after a part-payment', () => {
+    const ledger = leasesService.leaseLedger(LEASE_IDS.nguyenR3, AS_OF);
+
+    expect(shape(ledger)).toEqual([
+      ['2026-08-25', 'charge', 'debit', 50_000, 50_000],
+      ['2026-08-28', 'receipt', 'credit', 30_000, 20_000],
+    ]);
+    expect(ledger.entries[1]?.description).toBe('Payment received · bank import');
+    expect(ledger.totalCharged.cents).toBe(50_000);
+    expect(ledger.totalReceived.cents).toBe(30_000);
+    expect(ledger.currentBalance.cents).toBe(20_000);
+    expect(ledger.currentBalance.cents).toBe(leasesService.arrearsFor(LEASE_IDS.nguyenR3, AS_OF).outstanding.cents);
+  });
+
+  it('shows money received before its charge fell due as credit — Williams is $340 ahead', () => {
+    const ledger = leasesService.leaseLedger(LEASE_IDS.williamsR4, AS_OF);
+
+    expect(shape(ledger)).toEqual([
+      ['2026-09-01', 'receipt', 'credit', 68_000, -68_000],
+      ['2026-09-02', 'charge', 'debit', 34_000, -34_000],
+    ]);
+    expect(ledger.currentBalance.cents).toBe(-34_000);
+    expect(ledger.currentBalance.cents).toBe(leasesService.arrearsFor(LEASE_IDS.williamsR4, AS_OF).outstanding.cents);
+  });
+
+  it('rejects an unknown lease', () => {
+    expect(() => leasesService.leaseLedger(asId<'Lease'>('lease-nope'), AS_OF)).toThrow(NotFoundError);
   });
 });

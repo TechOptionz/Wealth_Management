@@ -21,3 +21,4 @@ export { Avatar, OwnerTag, initialsOf } from './Avatar';
 export { List, ListRow, DateBox } from './ListRow';
 export { Tabs } from './Tabs';
 export { TextField, SelectField, FieldGrid } from './Field';
+export { Modal, type ModalProps } from './Modal';

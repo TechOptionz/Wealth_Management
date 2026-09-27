@@ -43,6 +43,9 @@ export default async function LeasesPage() {
       outstandingByLease={Object.fromEntries(
         leasesService.list().map((lease) => [lease.id, leasesService.arrearsFor(lease.id, asOf).outstanding]),
       )}
+      ledgerByLease={Object.fromEntries(
+        leasesService.list().map((lease) => [lease.id, leasesService.leaseLedger(lease.id, asOf)]),
+      )}
     />
   );
 }

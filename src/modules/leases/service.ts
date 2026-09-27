@@ -10,10 +10,13 @@ import { accessService } from '@/modules/access/service';
 import { propertiesService } from '@/modules/properties/service';
 import { leasesRepository } from './repository';
 import {
+  FREQUENCY_LABELS,
   PERIODS_PER_YEAR,
   type ArrearsPosition,
   type ArrearsState,
   type Lease,
+  type LeaseLedger,
+  type LeaseLedgerEntry,
   type LeaseStatus,
   type RentCharge,
   type RentAllocation,
@@ -242,6 +245,84 @@ export const leasesService = {
   balanceForLease(leaseId: LeaseId, asOf: IsoDate): Money {
     const position = leasesService.arrearsFor(leaseId, asOf);
     return money(-position.outstanding.cents, position.outstanding.currency);
+  },
+
+  /**
+   * A lease's statement of account as at a date (FR-05, BR-05).
+   *
+   * Lists, in date order, every charge that had fallen due and every allocation
+   * received by `asOf`, with the balance after each line. Charges are debits;
+   * receipts and approved credits are credits; a reversal is a debit because it
+   * restores what a dishonoured payment had settled. Nothing is stored — the
+   * statement is rebuilt from the same records `arrearsFor` reads, so the two
+   * agree except when money has been received against a charge not yet due,
+   * which the statement shows as credit and the arrears figure leaves out.
+   */
+  leaseLedger(leaseId: LeaseId, asOf: IsoDate): LeaseLedger {
+    const lease = leasesService.require(leaseId);
+    const currency = lease.rent.currency;
+
+    // BR-05: future rent is not arrears, and it is not on the statement either.
+    const charges = leasesRepository.listCharges(leaseId).filter((charge) => charge.dueOn <= asOf);
+    const allocations = leasesRepository
+      .listCharges(leaseId)
+      .flatMap((charge) => leasesRepository.listAllocations(charge.id))
+      .filter((allocation) => allocation.receivedOn <= asOf);
+
+    type Line = Omit<LeaseLedgerEntry, 'balance'>;
+
+    const chargeLines = charges.map(
+      (charge): Line => ({
+        id: charge.id,
+        date: charge.dueOn,
+        description: describeCharge(charge, lease.frequency),
+        type: 'charge',
+        side: 'debit',
+        amount: charge.amount,
+      }),
+    );
+
+    const allocationLines = allocations.map(
+      (allocation): Line => ({
+        id: allocation.id,
+        date: allocation.receivedOn,
+        description: describeAllocation(allocation),
+        type: allocation.kind,
+        // A reversal is stored negative: it puts the money back on the debit side.
+        side: allocation.amount.cents < 0 ? 'debit' : 'credit',
+        amount: money(Math.abs(allocation.amount.cents), allocation.amount.currency),
+      }),
+    );
+
+    // Date order. On the same day a charge falls due before money is applied to
+    // it; otherwise lines keep the order they were recorded in (sort is stable).
+    const rank = (line: Line): number => (line.type === 'charge' ? 0 : 1);
+    const lines = [...chargeLines, ...allocationLines].sort(
+      (a, b) => a.date.localeCompare(b.date) || rank(a) - rank(b),
+    );
+
+    let running = money(0, currency);
+    const entries: LeaseLedgerEntry[] = lines.map((line) => {
+      running = line.side === 'debit' ? addMoney(running, line.amount) : subtractMoney(running, line.amount);
+      return { ...line, balance: running };
+    });
+
+    const totalCharged = sumMoney(charges.map((charge) => charge.amount), currency);
+    // Receipts and credits are positive, reversals negative, so this nets them.
+    const totalReceived = sumMoney(allocations.map((allocation) => allocation.amount), currency);
+
+    return {
+      leaseId,
+      reference: lease.reference,
+      tenantName: leasesRepository.findTenant(lease.tenantId)?.name ?? 'Unknown tenant',
+      propertyLabel: leasesService.propertyLabel(lease),
+      leasePeriod: { startsOn: lease.startsOn, endsOn: lease.endsOn },
+      asOf,
+      totalCharged,
+      totalReceived,
+      currentBalance: subtractMoney(totalCharged, totalReceived),
+      entries,
+    };
   },
 
   /**
@@ -541,6 +622,29 @@ export const leasesService = {
     return count;
   },
 };
+
+/** "Weekly rent" for a generated charge; a recovery keeps the wording it was posted with. */
+function describeCharge(charge: RentCharge, frequency: RentFrequency): string {
+  if (charge.description) return charge.description;
+  return charge.kind === 'utility' ? 'Utility recovery' : `${FREQUENCY_LABELS[frequency]} rent`;
+}
+
+/** "Payment received · Bank transfer" — what happened, then the note it was recorded with. */
+function describeAllocation(allocation: RentAllocation): string {
+  let lead: string;
+  switch (allocation.kind) {
+    case 'receipt':
+      lead = allocation.bankTransactionId ? 'Payment received · bank import' : 'Payment received';
+      break;
+    case 'credit':
+      lead = 'Approved credit';
+      break;
+    case 'reversal':
+      lead = 'Payment reversed';
+      break;
+  }
+  return allocation.note ? `${lead} · ${allocation.note}` : lead;
+}
 
 function resolveArrearsState(outstanding: Money, settled: Money, due: Money, disputed: boolean): ArrearsState {
   if (disputed) return 'disputed';

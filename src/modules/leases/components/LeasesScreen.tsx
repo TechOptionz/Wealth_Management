@@ -9,16 +9,17 @@ import { FilterGroup } from '@/shared/components/FilterGroup';
 import { Grid, Row, Stack, Toolbar } from '@/shared/components/Layout';
 import { formatMoney, type Money } from '@/shared/lib/money';
 import { formatDateCompact, formatDateShort } from '@/shared/lib/dates';
-import type { Tone } from '@/shared/types/common';
+import type { LeaseId, Tone } from '@/shared/types/common';
 import type { IconName } from '@/shared/components/IconSprite';
 import { Card as PanelCard, CardBody, CardHeader } from '@/shared/components/Card';
 import { FieldGrid, TextField } from '@/shared/components/Field';
 import { ActionForm, firstError } from '@/shared/components/ActionForm';
 import { Sub } from '@/shared/components/Layout';
 import { changeRentAction, recordRentPaymentAction, terminateLeaseAction } from '../actions';
-import { FREQUENCY_SUFFIX, type LeaseStatus } from '../model';
+import { FREQUENCY_SUFFIX, type LeaseLedger, type LeaseStatus } from '../model';
 import type { LeaseFilter, LeaseView } from '../service';
 import { NewLeaseForm, type NewLeaseFormProps } from './NewLeaseForm';
+import { TenantStatementModal } from './TenantStatementModal';
 
 const STATUS_CHIP: Record<LeaseStatus, { tone: Tone; icon: IconName; label: (days: number) => string }> = {
   active: { tone: 'good', icon: 'i-check', label: () => 'Active' },
@@ -83,6 +84,8 @@ export interface LeasesScreenProps {
   readonly today: string;
   /** Outstanding balance per lease id; positive when the tenant is in arrears. */
   readonly outstandingByLease: Readonly<Record<string, Money>>;
+  /** Running statement per lease id, as at `today` — what "View statement" opens. */
+  readonly ledgerByLease: Readonly<Record<string, LeaseLedger>>;
 }
 
 /** Which lifecycle panel is open for the selected lease. */
@@ -97,11 +100,20 @@ const PANEL_LABELS: Record<LeasePanelKind, string> = {
 const PANEL_KINDS: readonly LeasePanelKind[] = ['terminate', 'rent', 'payment'];
 
 /** FR-05 — leases, tenants and the new-lease form. */
-export function LeasesScreen({ viewsByFilter, counts, newLease, today, outstandingByLease }: LeasesScreenProps) {
+export function LeasesScreen({
+  viewsByFilter,
+  counts,
+  newLease,
+  today,
+  outstandingByLease,
+  ledgerByLease,
+}: LeasesScreenProps) {
   const [filter, setFilter] = useState<LeaseFilter>('active');
   const [panel, setPanel] = useState<LeasePanel>(null);
   const [isCreating, setCreating] = useState(false);
+  const [viewingStatement, setViewingStatement] = useState<LeaseId | null>(null);
   const close = (): void => setPanel(null);
+  const statement = viewingStatement ? ledgerByLease[viewingStatement] : undefined;
 
   return (
     <Stack>
@@ -156,6 +168,9 @@ export function LeasesScreen({ viewsByFilter, counts, newLease, today, outstandi
                       {PANEL_LABELS[kind]}
                     </Button>
                   ))}
+                  <Button small variant="ghost" onClick={() => setViewingStatement(panel.view.lease.id)}>
+                    View statement
+                  </Button>
                 </Row>
               }
             />
@@ -263,6 +278,8 @@ export function LeasesScreen({ viewsByFilter, counts, newLease, today, outstandi
           <NewLeaseForm {...newLease} />
         )}
       </Grid>
+
+      {statement ? <TenantStatementModal ledger={statement} onClose={() => setViewingStatement(null)} /> : null}
     </Stack>
   );
 }

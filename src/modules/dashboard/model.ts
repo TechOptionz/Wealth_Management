@@ -5,7 +5,7 @@
  * else is composed from the feature modules, which is why the dependency arrows
  * all point *into* this module and never out of it.
  */
-import type { EntityId, IsoDate } from '@/shared/types/common';
+import type { EntityId, IsoDate, LoanId, PropertyId } from '@/shared/types/common';
 import type { Money } from '@/shared/lib/money';
 
 /**
@@ -132,4 +132,89 @@ export interface CashFlowPoint {
   readonly label: string;
   readonly receipts: Money;
   readonly outgoings: Money;
+}
+
+/* ---------- What-if scenarios (FR-11) ---------- */
+
+/** A variable-rate facility as the simulator sees it: only what the rate maths needs. */
+export interface ScenarioFacility {
+  readonly loanId: LoanId;
+  /** "CBA · Investment loan 8820". */
+  readonly label: string;
+  readonly balance: Money;
+  /** Current annual nominal rate as a fraction, e.g. 0.0634. */
+  readonly annualRate: number;
+}
+
+/** A property that can be marked vacant, with the rent it would stop producing. */
+export interface ScenarioProperty {
+  readonly propertyId: PropertyId;
+  readonly name: string;
+  /** Monthly-equivalent rent of the leases live on the as-of date; zero when already vacant. */
+  readonly monthlyRent: Money;
+  readonly leaseCount: number;
+}
+
+/**
+ * Everything a scenario is computed from, gathered once on the server.
+ *
+ * Plain data, so the drawer can re-run the maths in the browser as controls
+ * change — no round trip, and no second copy of the arithmetic.
+ */
+export interface ScenarioInputs {
+  readonly asOf: IsoDate;
+  /** The posted month the baseline comes from; null when nothing has been posted. */
+  readonly baselineMonth: IsoDate | null;
+  readonly baselineMonthLabel: string | null;
+  readonly baselineReceipts: Money;
+  readonly baselineOutgoings: Money;
+  /** Receipts less outgoings for the baseline month (cash basis, BR-03). */
+  readonly baselineCashFlow: Money;
+  readonly variableFacilities: readonly ScenarioFacility[];
+  /** Fixed-rate debt, reported so the reader can see what a rate shock does *not* touch. */
+  readonly fixedDebt: Money;
+  readonly fixedFacilityCount: number;
+  readonly properties: readonly ScenarioProperty[];
+}
+
+export interface ScenarioParameters {
+  /** Change to the annual rate in percentage points, e.g. 0.25 for +0.25%. */
+  readonly rateDeltaPercent: number;
+  readonly vacantPropertyIds?: readonly PropertyId[];
+}
+
+export interface ScenarioFacilityImpact extends ScenarioFacility {
+  readonly simulatedRate: number;
+  /** One month's interest at the current rate. */
+  readonly baselineInterest: Money;
+  /** Extra interest per month under the shock; negative for a rate cut. */
+  readonly additionalInterest: Money;
+  readonly simulatedInterest: Money;
+}
+
+/**
+ * Sign convention: `interestImpact` and `rentalImpact` are costs (positive means
+ * cash flow gets worse); `monthlyDelta` and `bufferImpact` are movements in cash
+ * flow (negative means worse). The tiles read either without flipping a sign.
+ */
+export interface ScenarioResult {
+  readonly asOf: IsoDate;
+  readonly baselineMonthLabel: string | null;
+  readonly rateDeltaPercent: number;
+  /** The vacancies actually applied — unknown ids dropped, repeats collapsed. */
+  readonly vacantPropertyIds: readonly PropertyId[];
+  readonly baselineCashFlow: Money;
+  readonly simulatedCashFlow: Money;
+  readonly monthlyDelta: Money;
+  readonly interestImpact: Money;
+  readonly rentalImpact: Money;
+  readonly baselineVariableInterest: Money;
+  readonly simulatedVariableInterest: Money;
+  readonly variableDebt: Money;
+  readonly fixedDebt: Money;
+  readonly bufferMonths: number;
+  /** `monthlyDelta × bufferMonths`: what the shock does to a cash reserve over the horizon. */
+  readonly bufferImpact: Money;
+  readonly facilities: readonly ScenarioFacilityImpact[];
+  readonly vacancies: readonly ScenarioProperty[];
 }

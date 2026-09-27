@@ -1,35 +1,35 @@
-/* Design tokens — ported verbatim from design/wealth-platform-design.html (lines 11-69).
+/* Design tokens — ported verbatim from design/wealth-platform-design.html (lines 11-68).
    Source of truth for the palette. Do not edit values without updating the design file. */
-/* ---------- Tokens (palette from howtobecomeasuccessfulcoach.com: charcoal #1c2128 + warm gold accent) ---------- */
+/* ---------- Tokens (palette after analytica.live: near-black #08090a, charcoal surfaces, hairline borders, orange #f77d00 accent) ---------- */
 :root{
-  --ink:#1c2128;        /* site theme colour — sidebar, headings */
-  --ink-2:#252c35;
-  --ink-3:#313a45;
-  --ink-line:#3d4652;
-  --gold:#c9a55c;       /* warm accent */
-  --gold-deep:#a5843a;
-  --gold-soft:#f7efd9;
-  --bg:#f3f4f6;
+  --ink:#08090a;        /* site theme colour — sidebar, headings */
+  --ink-2:#151616;
+  --ink-3:#1e1f21;
+  --ink-line:#2c2c2c;
+  --gold:#f77d00;       /* accent — the orange analytica.live puts on highlighted figures */
+  --gold-deep:#b05000;
+  --gold-soft:#fff1e6;
+  --bg:#f7f8f8;
   --surface:#ffffff;
-  --surface-2:#f8f9fb;
-  --line:#e3e6eb;
-  --line-2:#eef0f3;
-  --text:#1c2128;
-  --text-2:#4b5563;
+  --surface-2:#f2f3f4;
+  --line:#e5e7eb;
+  --line-2:#eef0f2;
+  --text:#08090a;
+  --text-2:#4a4a4a;
   --muted:#6b7280;
-  --faint:#9aa1ac;
-  --good:#1f7a4d;   --good-bg:#e7f5ec;
+  --faint:#9ca3af;
+  --good:#2a7541;   --good-bg:#e6f4ea;
   --warn:#9a5b00;   --warn-bg:#fff4dd;
-  --bad:#b42318;    --bad-bg:#fdecea;
-  --info:#2c5e9e;   --info-bg:#e8f0fa;
-  --on-ink:#e9ecf0;
-  --on-ink-muted:#9ea6b1;
-  --solid:#1c2128; --on-solid:#ffffff;     /* filled buttons, pressed filters */
-  --hero:#1c2128; --on-hero:#e9ecf0; --hero-line:transparent;
-  --bar:#1c2128;                            /* chart bars */
-  --side-bg:#1c2128;
-  --on-gold-soft:#8a6a24;                   /* text on gold-soft (avatars, gold chips) */
-  --shadow:0 1px 2px rgba(28,33,40,.06), 0 0 0 1px rgba(28,33,40,.04);
+  --bad:#b33025;    --bad-bg:#fdecea;
+  --info:#2a63c4;   --info-bg:#e8f0fb;
+  --on-ink:#f7f8f8;
+  --on-ink-muted:#9ca3af;
+  --solid:#08090a; --on-solid:#ffffff;     /* filled buttons, pressed filters */
+  --hero:#08090a; --on-hero:#f7f8f8; --hero-line:transparent;
+  --bar:#08090a;                            /* chart bars */
+  --side-bg:#08090a;
+  --on-gold-soft:#9a4700;                   /* text on gold-soft (avatars, gold chips) */
+  --shadow:0 1px 2px rgba(8,9,10,.06), 0 0 0 1px rgba(8,9,10,.05);
   --r-sm:6px; --r-md:10px; --r-lg:14px;
   --sidebar:248px;
   --topbar:60px;
@@ -38,24 +38,24 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#15191f; --surface:#1c2128; --surface-2:#20262e; --line:#2c343e; --line-2:#252c35;
-    --text:#e9ecf0; --text-2:#c2c8d0; --muted:#98a1ad; --faint:#6f7883;
-    --good-bg:#153726; --warn-bg:#3a2a08; --bad-bg:#3d1a16; --info-bg:#182c45; --gold-soft:#332b18;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05);
-    --good:#63d195; --warn:#f0b65a; --bad:#f5948b; --info:#8ab8f5;
-    --gold:#d9b86c; --gold-deep:#e2c47e; --on-gold-soft:#e6cb86;
-    --solid:#e9ecf0; --on-solid:#1c2128; --hero:#0d1115; --on-hero:#f2f4f7; --hero-line:#2c343e; --bar:#cfd5dc; --side-bg:#12161b;
-    --on-ink:#e9ecf0; --on-ink-muted:#a3abb6;
+    --bg:#08090a; --surface:#191b1d; --surface-2:#212326; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+    --text:#f7f8f8; --text-2:#c9cdd3; --muted:#9ca3af; --faint:#6b7280;
+    --good-bg:#0f2a19; --warn-bg:#2c2208; --bad-bg:#33130f; --info-bg:#0f1f3a; --gold-soft:#2b1806;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
+    --good:#4caf50; --warn:#ffbb25; --bad:#f2625d; --info:#6ea8ff;
+    --gold:#f77d00; --gold-deep:#ff965f; --on-gold-soft:#ffb27a;
+    --solid:#f7f8f8; --on-solid:#08090a; --hero:#000000; --on-hero:#f7f8f8; --hero-line:rgba(255,255,255,.12); --bar:#c9cdd3; --side-bg:#08090a;
+    --on-ink:#f7f8f8; --on-ink-muted:#9ca3af;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#15191f; --surface:#1c2128; --surface-2:#20262e; --line:#2c343e; --line-2:#252c35;
-  --text:#e9ecf0; --text-2:#c2c8d0; --muted:#98a1ad; --faint:#6f7883;
-  --good-bg:#153726; --warn-bg:#3a2a08; --bad-bg:#3d1a16; --info-bg:#182c45; --gold-soft:#332b18;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.05);
-    --good:#63d195; --warn:#f0b65a; --bad:#f5948b; --info:#8ab8f5;
-    --gold:#d9b86c; --gold-deep:#e2c47e; --on-gold-soft:#e6cb86;
-    --solid:#e9ecf0; --on-solid:#1c2128; --hero:#0d1115; --on-hero:#f2f4f7; --hero-line:#2c343e; --bar:#cfd5dc; --side-bg:#12161b;
-    --on-ink:#e9ecf0; --on-ink-muted:#a3abb6;
+  --bg:#08090a; --surface:#191b1d; --surface-2:#212326; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.05);
+  --text:#f7f8f8; --text-2:#c9cdd3; --muted:#9ca3af; --faint:#6b7280;
+  --good-bg:#0f2a19; --warn-bg:#2c2208; --bad-bg:#33130f; --info-bg:#0f1f3a; --gold-soft:#2b1806;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
+    --good:#4caf50; --warn:#ffbb25; --bad:#f2625d; --info:#6ea8ff;
+    --gold:#f77d00; --gold-deep:#ff965f; --on-gold-soft:#ffb27a;
+    --solid:#f7f8f8; --on-solid:#08090a; --hero:#000000; --on-hero:#f7f8f8; --hero-line:rgba(255,255,255,.12); --bar:#c9cdd3; --side-bg:#08090a;
+    --on-ink:#f7f8f8; --on-ink-muted:#9ca3af;
 }
 

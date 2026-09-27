@@ -169,7 +169,7 @@ audit entry and revalidates. `tests/actions.test.ts` covers all of them.
 | ID | Requirement | Release | Status |
 | --- | --- | --- | --- |
 | FR-10 | Assisted statement analysis (PDF extraction, subscription detection) | 2 | Out of scope. `aiExtractionApproved` exists and defaults to false. |
-| FR-11 | Budgeting, lending and scenarios | 2 | Out of scope, **except** its rule "principal lent is a receivable, not a household expense", which is implemented and tested. |
+| FR-11 | Budgeting, lending and scenarios | 2 | Partly built ahead of release. The rule "principal lent is a receivable, not a household expense" is implemented and tested, and the dashboard's what-if simulator (`dashboard/scenarios.ts`, `ScenarioDrawer`, `GET /api/dashboard/scenario`, `tests/fr-11-scenarios.test.ts`) models rate shocks on variable debt and property vacancies against the latest posted month's cash flow. Budgets and lending workflows remain out of scope. |
 | FR-12 | Extended portfolio and family modules | Later | Out of scope. SMSF is modelled as `manual-summary` and excluded from totals, matching "read-only summaries". |
 
 ---

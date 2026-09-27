@@ -12,8 +12,16 @@ arrears. Covers FR-05 and BR-05.
   not the same as forgiving rent.
 - `chargeAnchorOn` is separate from `startsOn` because the rent day is often not
   the commencement day.
+- **The tenant statement is derived too.** `leaseLedger(leaseId, asOf)` rebuilds
+  the running ledger from charges and allocations on every read: charges and
+  reversals are debits, receipts and approved credits are credits, and the last
+  line's balance always equals `totalCharged − totalReceived`. It reads the same
+  records as `arrearsFor`, so the two agree unless money was received against a
+  charge not yet due — the statement shows that as credit, the arrears figure
+  leaves it out.
 
-**Owns** — `Tenant`, `Lease`, `RentCharge`, `RentAllocation`, `ArrearsPosition`.
+**Owns** — `Tenant`, `Lease`, `RentCharge`, `RentAllocation`, `ArrearsPosition`,
+`LeaseLedger` (read model for the statement modal).
 
 **Depends on** — `properties` (property and component labels).
 
